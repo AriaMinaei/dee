@@ -198,6 +198,23 @@ describe "Dee", ->
 			d.register [A, AA]
 			d.isAttachment("AA").should.equal true
 
+		they.skip "can only attach to class components", ->
+
+		they "can attach to singletons", ->
+			class Singleton
+				@componentId: "Singleton"
+				@isSingleton: yes
+
+			class Attachment
+				@componentId: "Attachment"
+				@attachesTo: "Singleton":
+					as: "attachment"
+
+			d.register [Attachment, Singleton]
+			d.initializeRemainingSingletons()
+			expect(d.get("Singleton").attachment).to.be.instanceOf Attachment
+
+
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->
 			d.get("Dee").should.equal d

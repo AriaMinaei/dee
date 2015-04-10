@@ -2,12 +2,14 @@ GlobalContainer = require './dee/GlobalContainer'
 SingletonContainer = require './dee/SingletonContainer'
 AttachmentContainer = require './dee/AttachmentContainer'
 InstantiableContainer = require './dee/InstantiableContainer'
+TargetAttachmentsManager = require './dee/TargetAttachmentsManager'
 pluck = require 'utila/lib/array/pluck'
 
 module.exports = class Dee
 	constructor: ->
 		@_containers = {}
 		@_singletonsInitQueue = []
+		@_targetAttachmentsManagers = {}
 
 		@registerGlobal "Dee", this
 
@@ -15,9 +17,11 @@ module.exports = class Dee
 	 * Registers the given component(s).
 	 *
 	 * Examples:
-	 * register([Class] components) // registers all the classes in the supplied array
-	 * register(Class) // registers one class component
-	 * register(componentId, componentValue) // registers the value as a global component
+	 * - register([Class] components) // registers all the classes in the
+	 *   supplied array
+	 * - register(Class) // registers one class component
+	 * - register(componentId, componentValue) // registers the value as
+	 *   a global component
 	###
 	register: ->
 		if arguments.length is 2
@@ -109,14 +113,16 @@ module.exports = class Dee
 		if c.isGlobal or c.isSingleton
 			c.getValue()
 		else
-			throw Error "#Dee.get() only returns singletons or global components. '#{id}' is #{c.componentTypeName}"
+			throw Error "#Dee.get() only returns singletons or global components.
+				'#{id}' is #{c.componentTypeName}"
 
 	instantiate: (id, args) ->
 		c = @_getContainer(id)
 		if c.isInstantiable
 			c.instantiate args
 		else
-			throw Error "#Dee.instantiate() only returns for instantiable components. '#{id}' is #{c.componentTypeName}"
+			throw Error "#Dee.instantiate() only returns for instantiable components.
+				'#{id}' is #{c.componentTypeName}"
 
 	_addSingletonToInitializationQueue: (container) ->
 		@_singletonsInitQueue.push container
@@ -132,3 +138,11 @@ module.exports = class Dee
 			@_singletonsInitQueue[0].getValue()
 
 		return
+
+	_getTargetAttachmentsManager: (targetId) ->
+		m = @_targetAttachmentsManagers[targetId]
+		unless m?
+			m = new TargetAttachmentsManager this, targetId
+			@_targetAttachmentsManagers[targetId] = m
+
+		return m

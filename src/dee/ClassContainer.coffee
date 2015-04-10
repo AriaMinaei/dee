@@ -8,7 +8,6 @@ module.exports = class ClassContainer extends ComponentContainer
 
 		@_uninitializedPropNames = []
 
-
 	_prepareClassForInstantiation: ->
 		if @_classPreparedForInstantiation is no
 			@_classPreparedForInstantiation = yes
@@ -25,13 +24,17 @@ module.exports = class ClassContainer extends ComponentContainer
 					@_setupGlobalOrSingletonDep propName, depContainer
 				else if depContainer.isInstantiable
 					@_setupInstantiableDep propName, depContainer
-				# else
-				# 	# todo: better error
-				# 	throw Error "Attachment?"
+				else
+					# todo: better error
+					throw Error "Attachment?"
+
+		@_dee._targetAttachmentsManagers[@_id]?.setupOnTarget this
+
+		return
 
 	_setupGlobalOrSingletonDep: (propName, depContainer) ->
 		valuePropName = "_#{propName}"
-		@_uninitializedPropNames.push valuePropName
+		@addUninitializedPropName valuePropName
 
 		eval """
 		function getter() {
@@ -50,8 +53,11 @@ module.exports = class ClassContainer extends ComponentContainer
 
 	_setupInstantiableDep: (propName, depContainer) ->
 		valuePropName = "_#{propName}"
-		@_uninitializedPropNames.push valuePropName
-		initializerMethodName = "_init#{propName[0].toUpperCase() + propName.substr(1, propName.length)}"
+		@addUninitializedPropName valuePropName
+		initializerMethodName = if propName[0] is '_'
+			"__init#{propName[1].toUpperCase() + propName.substr(2, propName.length)}"
+		else
+			"_init#{propName[0].toUpperCase() + propName.substr(1, propName.length)}"
 
 		eval """
 		function initialize() {
@@ -82,13 +88,20 @@ module.exports = class ClassContainer extends ComponentContainer
 		obj = Object.create @_cls.prototype
 		obj.constructor = @_cls
 
-		preconstructCb?(obj)
-
 		for propName in @_uninitializedPropNames
 			obj[propName] = null
 
+		preconstructCb?(obj)
 		@_cls.apply(obj, args)
 
 		obj
+
+	addUninitializedPropName: (name) ->
+		if name in @_uninitializedPropNames
+			throw Error "Prop name '#{name}' is already set on '#{@_id}'"
+
+		@_uninitializedPropNames.push name
+
+		return
 
 	isClass: yes
