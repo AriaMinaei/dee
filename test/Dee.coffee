@@ -105,7 +105,6 @@ describe "Dee", ->
 
 			expect(dep.name).to.equal "Buick"
 
-
 	about "Singleton-s", ->
 		they "are recognized by having Class.isSingleton = true", ->
 			class S
@@ -185,6 +184,19 @@ describe "Dee", ->
 			d.initializeRemainingSingletons()
 
 			d.instantiate("A").b.should.be.instanceOf B
+
+	about "Attachments", ->
+		they "are recognized by typeof Class.attachesTo === 'object'", ->
+			class A
+				@componentId: "A"
+
+			class AA
+				@componentId: "AA"
+				@attachesTo: "A":
+					as: "aa"
+
+			d.register [A, AA]
+			d.isAttachment("AA").should.equal true
 
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->

@@ -101,6 +101,9 @@ module.exports = class Dee
 	isInstantiable: (id) ->
 		@_getContainer(id) instanceof InstantiableContainer
 
+	isAttachment: (id) ->
+		@_getContainer(id) instanceof AttachmentContainer
+
 	get: (id) ->
 		c = @_getContainer(id)
 		if c.isGlobal or c.isSingleton
