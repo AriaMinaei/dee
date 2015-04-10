@@ -12,6 +12,12 @@ describe "Dee", ->
 		it "should work", ->
 			(-> new Dee).should.not.throw()
 
+	describe "All components", ->
+		they "should have unique componentId-s", ->
+			d.register "a", {}
+			(-> d.register "a", {}).should.throw()
+
+
 	about "Global values", ->
 		they "are recognized by calling #Dee.register(id, value)", ->
 			d.register "a", a = {}
@@ -21,7 +27,7 @@ describe "Dee", ->
 			d.register "a", a = {}
 			d.get("a").should.equal a
 
-	about "all class components (singletons, attachments)", ->
+	about "All class components (singletons, attachments)", ->
 		they "should have a Class.componentId", ->
 			class A
 			(-> d.register A).should.throw()
