@@ -20,3 +20,32 @@ describe "Dee", ->
 		they "are returned untouched", ->
 			d.register "a", a = {}
 			d.get("a").should.equal a
+
+	about "Singleton-s", ->
+		they "are recognized by having Class.isSingleton = true", ->
+			class S
+				@componentId: "S"
+				@isSingleton: yes
+
+			d.register S
+			d.isSingleton("S").should.equal true
+
+		they "are instantiated by calling #Dee.get()", ->
+			class S
+				@componentId: "S"
+				@isSingleton: yes
+
+			d.register S
+			d.get("S").should.be.instanceof S
+
+		they "are only instantiated once", ->
+			class S
+				@componentId: "S"
+				@isSingleton: yes
+
+			d.register S
+			d.get("S").should.equal d.get("S")
+
+	about "Accessing #Dee itself", ->
+		it "is possible by calling #Dee.get('Dee')", ->
+			d.get("Dee").should.equal d

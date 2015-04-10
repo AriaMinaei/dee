@@ -1,8 +1,11 @@
 GlobalContainer = require './dee/GlobalContainer'
+SingletonContainer = require './dee/SingletonContainer'
 
 module.exports = class Dee
 	constructor: ->
 		@_containers = {}
+
+		@registerGlobal "Dee", this
 
 	###*
 	 * Registers the given component(s).
@@ -63,9 +66,29 @@ module.exports = class Dee
 		container
 
 	isGlobal: (id) ->
-		container = @_getContainer id
+		@_getContainer(id) instanceof GlobalContainer
 
-		container instanceof GlobalContainer
+	isSingleton: (id) ->
+		@_getContainer(id) instanceof SingletonContainer
 
 	get: (id) ->
 		@_getContainer(id).getValue()
+
+	###*
+	 * Registers a class
+	 * @param  {Function} cls The class
+	###
+	registerClass: (cls) ->
+		if typeof cls isnt 'function'
+			throw Error "registerClass() only accepts functions"
+
+		id = cls.componentId
+		unless id?
+			throw Error "Class `#{cls}` doesn't have a `componentId`"
+
+		@_ensureIdIsAvailable id
+
+		if cls.isSingleton is yes
+			@_containers[id] = new SingletonContainer this, id, cls
+
+		return this
