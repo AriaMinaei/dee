@@ -94,6 +94,29 @@ describe "Dee", ->
 			d.register S
 			d.get("S").should.equal d.get("S")
 
+		they "can have circular dependencies with each other", ->
+			bi = null
+			class A
+				@componentId: "A"
+				@isSingleton: yes
+				@deps: {"bi": "B"}
+				constructor: ->
+					bi = @bi
+
+			aa = null
+			class B
+				@componentId: "B"
+				@isSingleton: yes
+				@deps: {"aa": "A"}
+				constructor: ->
+					aa = @aa
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+
+			bi.should.equal d.get("B")
+			aa.should.equal d.get("A")
+
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->
 			d.get("Dee").should.equal d
