@@ -7,6 +7,7 @@ module.exports = class ClassContainer extends ComponentContainer
 		@_classPreparedForInstantiation = no
 
 		@_uninitializedPropNames = []
+		@_finalDepsMap = {}
 
 	_prepareClassForInstantiation: ->
 		if @_classPreparedForInstantiation is no
@@ -14,22 +15,36 @@ module.exports = class ClassContainer extends ComponentContainer
 		else
 			return
 
-		if typeof @_cls.deps is 'object'
-			for propName, depId of @_cls.deps
-				try depContainer = @_dee._getContainer depId
-				catch
-					throw Error "Unkown component '#{depId}', dependency of '#{@_id}'"
-
-				if depContainer.isGlobal or depContainer.isSingleton
-					@_setupGlobalOrSingletonDep propName, depContainer
-				else if depContainer.isInstantiable
-					@_setupInstantiableDep propName, depContainer
-				else
-					# todo: better error
-					throw Error "Attachment?"
-
 		@_dee._targetAttachmentsManagers[@_id]?.setupOnTarget this
 
+		if typeof @_cls.deps is 'object'
+			for propName, depId of @_cls.deps
+				@addDep propName, depId
+
+		return
+
+	addDep: (propName, depId) ->
+		original = @_finalDepsMap[propName]
+		if original?
+			if original is depId
+				return
+			else
+				throw Error "Double dependency for '#{@_id}'. Prop '#{propName}'
+					was a dep on '#{original}', but now it's being set on '#{depId}'"
+
+		try depContainer = @_dee._getContainer depId
+		catch
+			throw Error "Unkown component '#{depId}', dependency of '#{@_id}'"
+
+		if depContainer.isGlobal or depContainer.isSingleton
+			@_setupGlobalOrSingletonDep propName, depContainer
+		else if depContainer.isInstantiable
+			@_setupInstantiableDep propName, depContainer
+		else
+			# todo: better error
+			throw Error "Attachment?"
+
+		@_finalDepsMap[propName] = depId
 		return
 
 	_setupGlobalOrSingletonDep: (propName, depContainer) ->

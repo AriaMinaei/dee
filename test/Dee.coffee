@@ -241,21 +241,28 @@ describe "Dee", ->
 			d.register [Attachment, Instantiable]
 			d.initializeRemainingSingletons()
 
-			debugger
-
 			instantiable = d.instantiate("Instantiable")
 			attachment = instantiable.attachment
 
 			expect(attachment.target).to.be.equal instantiable
 
-		they.skip "can have peer deps", ->
-			class Instantiable
-				@componentId: "Instantiable"
+		they "can have peer deps", ->
+			class A
+				@componentId: "A"
 
-			class Attachment
-				@componentId: "Attachment"
-				@attachesTo: "Instantiable":
-					as: "attachment"
+			class B
+				@componentId: "B"
+				@attachesTo: "A":
+					as: "b"
+					peerDeps: {c: "C"}
+
+			class C
+				@componentId: "C"
+
+			d.register [A, B, C]
+			d.initializeRemainingSingletons()
+
+			expect(d.instantiate("A").c).to.be.instanceOf C
 
 
 	about "Accessing #Dee itself", ->
