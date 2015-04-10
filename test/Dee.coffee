@@ -264,6 +264,75 @@ describe "Dee", ->
 
 			expect(d.instantiate("A").c).to.be.instanceOf C
 
+	about "Method patching", ->
+		it "should only be allowed if method does exist", ->
+			class A
+				@componentId: "A"
+
+			class B
+				@componentId: "B"
+				@attachesTo: "A":
+					as: "b"
+					patches:
+						sayHi: -> "hi"
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+
+			(-> d.instantiate("A")).should.throw()
+
+		they "should ensure invokation of patched functionality precedes original method's invokation", ->
+			text = ''
+			class A
+				@componentId: "A"
+				sayHi: ->
+					text += 'A'
+
+			class B
+				@componentId: "B"
+				@attachesTo: "A":
+					as: "b"
+					patches:
+						sayHi: -> text += 'B'
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+			d.instantiate("A").sayHi()
+
+			text.should.equal "BA"
+
+	about "Method providing", ->
+		it "should only be allowed if no original method by the name exists", ->
+			class A
+				@componentId: "A"
+				sayHi: ->
+
+			class B
+				@componentId: "B"
+				@attachesTo: "A":
+					as: "b"
+					provides: sayHi: ->
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+
+			(-> d.instantiate("A")).should.throw()
+
+		it "should add functionality", ->
+			class A
+				@componentId: "A"
+
+			class B
+				@componentId: "B"
+				@attachesTo: "A":
+					as: "b"
+					provides: sayHi: -> "hi"
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+
+			d.instantiate("A").sayHi().should.equal "hi"
+
 
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->

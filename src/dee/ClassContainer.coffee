@@ -119,4 +119,36 @@ module.exports = class ClassContainer extends ComponentContainer
 
 		return
 
+	patchMethod: (methodName, fn, sourceComponentId) ->
+		@_prepareMethodForPatching methodName
+
+		fnName = "_#{methodName}By#{sourceComponentId}"
+		@_cls::[fnName] = fn
+
+		functionStr = @_cls::[methodName].toString()
+		functionStr = functionStr.split("\n")
+		functionStr.pop()
+		functionStr.shift()
+		functionStr.unshift "this.#{fnName}.apply(this, arguments);"
+
+		@_cls::[methodName] = new Function functionStr.join("\n")
+
+	_prepareMethodForPatching: (methodName, sourceComponentId) ->
+		originalFn = @_cls::[methodName]
+		unless originalFn?
+			throw Error "Method '##{@_id}.#{methodName}()' doesn't exist, thus it
+				cannot be patched by '#{sourceComponentId}'"
+
+		renamedName = '__' + methodName + 'Unpatched'
+		@_cls::[renamedName] = @_cls::[methodName]
+
+		@_cls::[methodName] = Function "return this.#{renamedName}.apply(this, arguments);"
+
+	provideMethod: (methodName, fn, sourceComponentId) ->
+		if @_cls::[methodName]?
+			throw Error "Method '##{@_id}.#{methodName}()' already exist, thus it
+				cannot be provided by '#{sourceComponentId}'"
+
+		@_cls::[methodName] = fn
+
 	isClass: yes
