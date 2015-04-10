@@ -36,6 +36,39 @@ describe "Dee", ->
 				@componentId: "B"
 			(-> d.register B).should.not.throw()
 
+		they "can depend on globals", ->
+			bi = null
+			class A
+				@componentId: "A"
+				@isSingleton: yes
+				@deps: {"bi": "b"}
+				constructor: ->
+					bi = @bi
+
+			d.register A
+			d.register "b", {}
+			d.initializeRemainingSingletons()
+
+			d.get("b").should.equal bi
+
+		they "can depend on singletons", ->
+			bi = null
+			class A
+				@componentId: "A"
+				@isSingleton: yes
+				@deps: {"bi": "B"}
+				constructor: ->
+					bi = @bi
+
+			class B
+				@componentId: "B"
+				@isSingleton: yes
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+
+			d.get("B").should.equal bi
+
 	about "Singleton-s", ->
 		they "are recognized by having Class.isSingleton = true", ->
 			class S

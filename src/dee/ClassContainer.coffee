@@ -10,10 +10,17 @@ module.exports = class ClassContainer extends ComponentContainer
 
 		preconstructCb?(obj)
 
-		# if desc.hasGlobalDeps()
-		# 	for propName, depId of desc.getGlobalDeps()
-		# 		obj[propName] = @get(depId)
+		if typeof @_cls.deps is 'object'
+			for propName, depId of @_cls.deps
+				try depContainer = @_dee._getContainer depId
+				catch
+					throw Error "Unkown component '#{depId}', dependency of '#{@_id}'"
+
+				if depContainer.isGlobal or depContainer.isSingleton
+					obj[propName] = depContainer.getValue()
 
 		@_cls.apply(obj, args)
 
 		obj
+
+	isClass: yes

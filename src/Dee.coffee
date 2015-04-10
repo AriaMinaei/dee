@@ -1,9 +1,11 @@
 GlobalContainer = require './dee/GlobalContainer'
 SingletonContainer = require './dee/SingletonContainer'
+pluck = require 'utila/lib/array/pluck'
 
 module.exports = class Dee
 	constructor: ->
 		@_containers = {}
+		@_singletonsInitQueue = []
 
 		@registerGlobal "Dee", this
 
@@ -92,3 +94,18 @@ module.exports = class Dee
 			@_containers[id] = new SingletonContainer this, id, cls
 
 		return this
+
+	_addSingletonToInitializationQueue: (container) ->
+		@_singletonsInitQueue.push container
+
+		return
+
+	_removeSingletonFromInitializationQueue: (container) ->
+		pluck @_singletonsInitQueue, container
+
+
+	initializeRemainingSingletons: ->
+		while @_singletonsInitQueue.length > 0
+			@_singletonsInitQueue[0].getValue()
+
+		return

@@ -6,3 +6,6 @@ module.exports = class GlobalContainer extends ComponentContainer
 
 	getValue: ->
 		@_value
+
+	isGlobal: yes
+	isClass: no
