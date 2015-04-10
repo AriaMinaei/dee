@@ -68,7 +68,7 @@ describe "Dee", ->
 
 			d.get("B").should.equal bi
 
-		they.skip "can depend on instantiables", ->
+		they "can depend on instantiables", ->
 			dep = null
 			class Singleton
 				@componentId: "Singleton"

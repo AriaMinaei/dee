@@ -23,8 +23,8 @@ module.exports = class ClassContainer extends ComponentContainer
 
 				if depContainer.isGlobal or depContainer.isSingleton
 					@_setupGlobalOrSingletonDep propName, depContainer
-				# else if depContainer.isInstantiable
-				# 	obj[propName] = depContainer.instantiate()
+				else if depContainer.isInstantiable
+					@_setupInstantiableDep propName, depContainer
 				# else
 				# 	# todo: better error
 				# 	throw Error "Attachment?"
@@ -32,13 +32,40 @@ module.exports = class ClassContainer extends ComponentContainer
 	_setupGlobalOrSingletonDep: (propName, depContainer) ->
 		valuePropName = "_#{propName}"
 		@_uninitializedPropNames.push valuePropName
-		# initializerMethodName = "_init#{propName[0].toUpperCase() + propName.substr(1, propName.length)}"
 
 		eval """
 		function getter() {
 			var prop = this.#{valuePropName};
 			if (prop === null) {
 				return this.#{valuePropName} = depContainer.getValue();
+			} else {
+				return prop;
+			}
+		};
+		"""
+
+		Object.defineProperty @_cls.prototype, propName, get: getter
+
+		return
+
+	_setupInstantiableDep: (propName, depContainer) ->
+		valuePropName = "_#{propName}"
+		@_uninitializedPropNames.push valuePropName
+		initializerMethodName = "_init#{propName[0].toUpperCase() + propName.substr(1, propName.length)}"
+
+		eval """
+		function initialize() {
+			return this.#{valuePropName} = depContainer.instantiate(arguments);
+		};
+		"""
+
+		@_cls::[initializerMethodName] = initialize
+
+		eval """
+		function getter() {
+			var prop = this.#{valuePropName};
+			if (prop === null) {
+				return this.#{valuePropName} = this.#{initializerMethodName}();
 			} else {
 				return prop;
 			}
