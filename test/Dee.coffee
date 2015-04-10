@@ -17,7 +17,6 @@ describe "Dee", ->
 			d.register "a", {}
 			(-> d.register "a", {}).should.throw()
 
-
 	about "Global values", ->
 		they "are recognized by calling #Dee.register(id, value)", ->
 			d.register "a", a = {}
@@ -27,7 +26,7 @@ describe "Dee", ->
 			d.register "a", a = {}
 			d.get("a").should.equal a
 
-	about "All class components (singletons, attachments)", ->
+	about "All class components (singletons, attachments, instantiables)", ->
 		they "should have a Class.componentId", ->
 			class A
 			(-> d.register A).should.throw()
@@ -68,6 +67,24 @@ describe "Dee", ->
 			d.initializeRemainingSingletons()
 
 			d.get("B").should.equal bi
+
+		they.skip "can depend on instantiables", ->
+			dep = null
+			class Singleton
+				@componentId: "Singleton"
+				@isSingleton: yes
+				@deps: {"instantiable": "Instantiable"}
+				constructor: ->
+					dep = @instantiable
+
+			class Instantiable
+				@componentId: "Instantiable"
+
+			d.register [Singleton, Instantiable]
+			d.initializeRemainingSingletons()
+
+			expect(dep).to.be.instanceOf Instantiable
+
 
 	about "Singleton-s", ->
 		they "are recognized by having Class.isSingleton = true", ->
@@ -116,6 +133,25 @@ describe "Dee", ->
 
 			bi.should.equal d.get("B")
 			aa.should.equal d.get("A")
+
+	about "Instantiables", ->
+		they "are recognized when not (Class.isSingleton? or Class.attachesTo?)", ->
+			class Instantiable
+				@componentId: "Instantiable"
+
+			class Singleton
+				@componentId: "Singleton"
+				@isSingleton: yes
+
+			class Attachment
+				@componentId: "Attachment"
+				@attachesTo: "Singleton":
+					as: "attachment"
+
+			d.register [Instantiable, Singleton, Attachment]
+			d.isInstantiable("Instantiable").should.equal true
+			d.isInstantiable("Attachment").should.equal false
+			d.isInstantiable("Singleton").should.equal false
 
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->

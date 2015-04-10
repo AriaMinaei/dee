@@ -1,5 +1,7 @@
 GlobalContainer = require './dee/GlobalContainer'
 SingletonContainer = require './dee/SingletonContainer'
+AttachmentContainer = require './dee/AttachmentContainer'
+InstantiableContainer = require './dee/InstantiableContainer'
 pluck = require 'utila/lib/array/pluck'
 
 module.exports = class Dee
@@ -53,6 +55,29 @@ module.exports = class Dee
 
 		return this
 
+	###*
+	 * Registers a class
+	 * @param  {Function} cls The class
+	###
+	registerClass: (cls) ->
+		if typeof cls isnt 'function'
+			throw Error "registerClass() only accepts functions"
+
+		id = cls.componentId
+		unless id?
+			throw Error "Class `#{cls}` doesn't have a `componentId`"
+
+		@_ensureIdIsAvailable id
+
+		if cls.isSingleton is yes
+			@_containers[id] = new SingletonContainer this, id, cls
+		else if cls.attachesTo?
+			@_containers[id] = new AttachmentContainer this, id, cls
+		else
+			@_containers[id] = new InstantiableContainer this, id, cls
+
+		return this
+
 	_ensureIdIsAvailable: (id) ->
 		if @_containers[id]?
 			throw Error "A component with id '#{id}' is already registered"
@@ -73,27 +98,13 @@ module.exports = class Dee
 	isSingleton: (id) ->
 		@_getContainer(id) instanceof SingletonContainer
 
+	isInstantiable: (id) ->
+		@_getContainer(id) instanceof InstantiableContainer
+
 	get: (id) ->
 		@_getContainer(id).getValue()
 
-	###*
-	 * Registers a class
-	 * @param  {Function} cls The class
-	###
-	registerClass: (cls) ->
-		if typeof cls isnt 'function'
-			throw Error "registerClass() only accepts functions"
 
-		id = cls.componentId
-		unless id?
-			throw Error "Class `#{cls}` doesn't have a `componentId`"
-
-		@_ensureIdIsAvailable id
-
-		if cls.isSingleton is yes
-			@_containers[id] = new SingletonContainer this, id, cls
-
-		return this
 
 	_addSingletonToInitializationQueue: (container) ->
 		@_singletonsInitQueue.push container
