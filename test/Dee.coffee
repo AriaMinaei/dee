@@ -214,6 +214,19 @@ describe "Dee", ->
 			d.initializeRemainingSingletons()
 			expect(d.get("Singleton").attachment).to.be.instanceOf Attachment
 
+		they "can attach to instantiables", ->
+			class Instantiable
+				@componentId: "Instantiable"
+
+			class Attachment
+				@componentId: "Attachment"
+				@attachesTo: "Instantiable":
+					as: "attachment"
+
+			d.register [Attachment, Instantiable]
+			d.initializeRemainingSingletons()
+			expect(d.instantiate("Instantiable").attachment).to.be.instanceOf Attachment
+
 
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->
