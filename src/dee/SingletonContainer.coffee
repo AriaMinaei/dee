@@ -21,3 +21,4 @@ module.exports = class SingletonContainer extends ClassContainer
 		@_cls.isLazy is yes
 
 	isSingleton: yes
+	componentTypeName: "singleton"

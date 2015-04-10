@@ -102,9 +102,18 @@ module.exports = class Dee
 		@_getContainer(id) instanceof InstantiableContainer
 
 	get: (id) ->
-		@_getContainer(id).getValue()
+		c = @_getContainer(id)
+		if c.isGlobal or c.isSingleton
+			c.getValue()
+		else
+			throw Error "#Dee.get() only returns singletons or global components. '#{id}' is #{c.componentTypeName}"
 
-
+	instantiate: (id, args) ->
+		c = @_getContainer(id)
+		if c.isInstantiable
+			c.instantiate args
+		else
+			throw Error "#Dee.instantiate() only returns for instantiable components. '#{id}' is #{c.componentTypeName}"
 
 	_addSingletonToInitializationQueue: (container) ->
 		@_singletonsInitQueue.push container

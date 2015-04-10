@@ -9,3 +9,4 @@ module.exports = class GlobalContainer extends ComponentContainer
 
 	isGlobal: yes
 	isClass: no
+	componentTypeName: "global"

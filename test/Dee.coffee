@@ -85,6 +85,26 @@ describe "Dee", ->
 
 			expect(dep).to.be.instanceOf Instantiable
 
+	about "Dependency on instantiables", ->
+		it "should have customizable initializers", ->
+			dep = null
+			class Singleton
+				@componentId: "Singleton"
+				@isSingleton: yes
+				@deps: {"instantiable": "Instantiable"}
+				constructor: ->
+					@_initInstantiable "Buick"
+					dep = @instantiable
+
+			class Instantiable
+				@componentId: "Instantiable"
+				constructor: (@name) ->
+
+			d.register [Singleton, Instantiable]
+			d.initializeRemainingSingletons()
+
+			expect(dep.name).to.equal "Buick"
+
 
 	about "Singleton-s", ->
 		they "are recognized by having Class.isSingleton = true", ->
@@ -152,6 +172,19 @@ describe "Dee", ->
 			d.isInstantiable("Instantiable").should.equal true
 			d.isInstantiable("Attachment").should.equal false
 			d.isInstantiable("Singleton").should.equal false
+
+		they "can depend on other instantiables", ->
+			class A
+				@componentId: "A"
+				@deps: {"b": "B"}
+
+			class B
+				@componentId: "B"
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+
+			d.instantiate("A").b.should.be.instanceOf B
 
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->
