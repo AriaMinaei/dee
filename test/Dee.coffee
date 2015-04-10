@@ -301,6 +301,26 @@ describe "Dee", ->
 
 			text.should.equal "BA"
 
+		they "should support using attachment's methods instead of anonymous function", ->
+			text = ''
+			class A
+				@componentId: "A"
+				sayHi: ->
+					text += 'A'
+
+			class B
+				@componentId: "B"
+				@attachesTo: "A":
+					as: "b"
+					patches: {"sayHi"}
+				sayHi: -> text += 'B'
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+			d.instantiate("A").sayHi()
+
+			text.should.equal "BA"
+
 	about "Method providing", ->
 		it "should only be allowed if no original method by the name exists", ->
 			class A
@@ -327,6 +347,25 @@ describe "Dee", ->
 				@attachesTo: "A":
 					as: "b"
 					provides: sayHi: -> "hi"
+
+			d.register [A, B]
+			d.initializeRemainingSingletons()
+
+			d.instantiate("A").sayHi().should.equal "hi"
+
+
+
+		it "should support using attachment's methods instead of anonymous function", ->
+			class A
+				@componentId: "A"
+
+			class B
+				@componentId: "B"
+				@attachesTo: "A":
+					as: "b"
+					provides: {"sayHi"}
+
+				sayHi: -> "hi"
 
 			d.register [A, B]
 			d.initializeRemainingSingletons()
