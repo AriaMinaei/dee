@@ -21,6 +21,15 @@ describe "Dee", ->
 			d.register "a", a = {}
 			d.get("a").should.equal a
 
+	about "all class components (singletons, attachments)", ->
+		they "should have a Class.componentId", ->
+			class A
+			(-> d.register A).should.throw()
+
+			class B
+				@componentId: "B"
+			(-> d.register B).should.not.throw()
+
 	about "Singleton-s", ->
 		they "are recognized by having Class.isSingleton = true", ->
 			class S
