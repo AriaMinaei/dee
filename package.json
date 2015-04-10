@@ -18,8 +18,8 @@
     "sinon-chai": "^2.6.0"
   },
   "scripts": {
-    "test": "mocha \"test/**/*.coffee\" --harmony",
-    "test:watch": "mocha \"test/**/*.coffee\" --watch --harmony",
+    "test": "mocha --debug-brk \"test/**/*.coffee\"",
+    "test:watch": "mocha \"test/**/*.coffee\" --watch",
 
     "compile": "coffee --bare --compile --output ./lib ./src",
     "compile:watch": "jitter src lib -b",

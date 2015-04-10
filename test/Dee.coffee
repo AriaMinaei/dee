@@ -227,6 +227,36 @@ describe "Dee", ->
 			d.initializeRemainingSingletons()
 			expect(d.instantiate("Instantiable").attachment).to.be.instanceOf Attachment
 
+		they "are called with their target's instance", ->
+			class Instantiable
+				@componentId: "Instantiable"
+
+			class Attachment
+				@componentId: "Attachment"
+				@attachesTo: "Instantiable":
+					as: "attachment"
+
+				constructor: (@target) ->
+
+			d.register [Attachment, Instantiable]
+			d.initializeRemainingSingletons()
+
+			debugger
+
+			instantiable = d.instantiate("Instantiable")
+			attachment = instantiable.attachment
+
+			expect(attachment.target).to.be.equal instantiable
+
+		they.skip "can have peer deps", ->
+			class Instantiable
+				@componentId: "Instantiable"
+
+			class Attachment
+				@componentId: "Attachment"
+				@attachesTo: "Instantiable":
+					as: "attachment"
+
 
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->
