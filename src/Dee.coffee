@@ -1,4 +1,5 @@
 TraitManager = require './dee/TraitManager'
+ClassContainer = require './dee/ClassContainer'
 GlobalContainer = require './dee/GlobalContainer'
 FelangeContainer = require './dee/FelangeContainer'
 SingletonContainer = require './dee/SingletonContainer'
@@ -76,6 +77,8 @@ module.exports = class Dee
 			throw Error "Class `#{cls}` doesn't have a `componentId`"
 
 		@_ensureIdCanBeTaken id
+
+		ClassContainer.prepareClass cls
 
 		@_containers[id] = switch cls.componentType
 			when "Singleton"

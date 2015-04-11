@@ -1,5 +1,6 @@
 ComponentContainer = require './ComponentContainer'
 TraitReactor = require './TraitReactor'
+clone = require 'utila/lib/clone'
 
 module.exports = class ClassContainer extends ComponentContainer
 	constructor: (_, __, @_cls) ->
@@ -197,3 +198,56 @@ module.exports = class ClassContainer extends ComponentContainer
 		@_cls
 
 	isClass: yes
+
+	@prepareClass: (cls) ->
+		return if cls::constructor is cls
+
+		deep = yes
+		props =
+			"componentType": not deep
+			"deps": deep
+			"traits": deep
+
+		next = cls
+		resolvedKeys = []
+		breakNext = no
+		loop
+			resolvedKeys.length = 0
+			for name, depth of props
+				nextVal = next[name]
+				continue unless nextVal?
+
+				if depth is not deep
+					cls[name] = nextVal
+					resolvedKeys.push name
+
+				else if next isnt cls
+					cls[name] = prepend cls[name], nextVal
+
+			for name in resolvedKeys
+				delete props[name]
+
+			break if breakNext
+			next = next::constructor
+			if next::constructor is next then breakNext = yes
+
+		return
+
+prepend = (top, bottom) ->
+	return top unless bottom?
+	return bottom unless top?
+
+	if Array.isArray(top)
+		if Array.isArray(bottom)
+			for item in bottom
+				unless item in top
+					top.push clone(item)
+
+	else if typeof top is 'object'
+		if typeof bottom is 'object'
+			for own key, value of bottom
+				continue unless value?
+				unless top[key]?
+					top[key] = clone value
+
+	top

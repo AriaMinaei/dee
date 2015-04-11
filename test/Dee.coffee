@@ -119,6 +119,35 @@ describe "Dee", ->
 
 			expect(dep).to.be.instanceOf Instantiable
 
+		they "inherit component properties from their parents", ->
+			class A
+				@componentId: "A"
+				@deps: {"one"}
+				@traits: ["B"]
+				# @attachesTo: "X":
+
+			class B
+				@componentType: "Singleton"
+				@componentId: "B"
+				@deps: {"two"}
+
+			class C
+				@deps: {"three"}
+				@componentType: "Instantiable"
+				@traits: ["C"]
+
+			B:: = Object.create C::
+			B::constructor = C
+
+			A:: = Object.create B::
+			A::constructor = B
+
+			d.register A
+			A.componentId.should.equal "A"
+			A.componentType.should.equal "Singleton"
+			A.traits.should.be.like ["B", "C"]
+			A.deps.should.be.like {"one", "two", "three"}
+
 	about "Dependency on instantiables", ->
 		it "should have customizable initializers", ->
 			dep = null
@@ -378,8 +407,15 @@ describe "Dee", ->
 					cls = container.getClass()
 					cls.repo = "ModelRepo"
 
-					dee.register class ModelRepo extends BaseRepo
+					class ModelRepo
 						@componentId: "ModelRepo"
+						constructor: ->
+							BaseRepo.apply this, arguments
+
+					ModelRepo.prototype = Object.create BaseRepo.prototype
+					ModelRepo::constructor = BaseRepo
+
+					dee.register ModelRepo
 
 			class Model
 				@componentId: "Model"
