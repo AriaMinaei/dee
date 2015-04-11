@@ -8,12 +8,20 @@ module.exports = class ClassContainer extends ComponentContainer
 
 		@_uninitializedPropNames = []
 		@_finalDepsMap = {}
+		@_hasRepo = no
 
 	_prepareClassForInstantiation: ->
 		if @_classPreparedForInstantiation is no
 			@_classPreparedForInstantiation = yes
 		else
 			return
+
+		if @isInstantiable and @_cls.repo?
+			@_hasRepo = yes
+			@_repo = @_dee.get @_cls.repo
+			@_repo._setInstantiator
+				instantiate: =>
+					@_actualltInstantiate arguments
 
 		@_dee._targetAttachmentsManagers[@_id]?.setupOnTarget this
 
@@ -97,19 +105,28 @@ module.exports = class ClassContainer extends ComponentContainer
 
 		return
 
-	_instantiate: (args, preconstructCb) ->
+	_instantiate: (args) ->
 		@_prepareClassForInstantiation()
 
+		unless @_hasRepo
+			@_actualltInstantiate args
+		else
+			@_repo._getOrCreateInstance.apply @_repo, args
+
+	_actualltInstantiate: (args) ->
 		obj = Object.create @_cls.prototype
 		obj.constructor = @_cls
 
 		for propName in @_uninitializedPropNames
 			obj[propName] = null
 
-		preconstructCb?(obj)
-		@_cls.apply(obj, args)
+		@_onInstantiation obj, args
+		@_cls.apply obj, args
 
 		obj
+
+	_onInstantiation: ->
+		# Only singletons would overwrite this
 
 	addUninitializedPropName: (name) ->
 		if name in @_uninitializedPropNames

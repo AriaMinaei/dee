@@ -239,8 +239,6 @@ describe "Dee", ->
 			d.register [A, AA]
 			d.isAttachment("AA").should.equal true
 
-		they.skip "can only attach to class components", ->
-
 		they "can attach to singletons", ->
 			class Singleton
 				@componentId: "Singleton"
@@ -313,8 +311,46 @@ describe "Dee", ->
 
 			expect(d.instantiate("A").c).to.be.instanceOf C
 
-	about "Traits", ->
+	about "Reacting to traits", ->
 		they "are recognized when a class component"
+
+	about "Repos", ->
+		they "should work", ->
+			class Model
+				@componentId: "Model"
+				@componentType: "Instantiable"
+				@repo: "ModelRepo"
+
+			class ModelRepo
+				@componentId: "ModelRepo"
+				@componentType: "Singleton"
+				@deps: {"dee": "Dee"}
+				constructor: ->
+					@_instances = {}
+					@_instantiator = null
+
+				_setInstantiator: (@_instantiator) ->
+
+				getInstance: ->
+					@dee.instantiate "Model", arguments
+
+				_getOrCreateInstance: (id) ->
+					id = arguments[0]
+
+					if @_instances[id]?
+						return @_instances[id]
+
+					instance = @_instantiator.instantiate arguments
+					@_instances[id] = instance
+
+					instance
+
+			d.register [Model, ModelRepo]
+			d.initializeRemainingSingletons()
+
+			d.instantiate("Model", [10]).should.equal d.instantiate("Model", [10])
+			d.instantiate("Model", [10]).should.equal d.get("ModelRepo").getInstance(10)
+			d.instantiate("Model", [11]).should.not.equal d.get("ModelRepo").getInstance(10)
 
 	about "Method patching", ->
 		it "should only be allowed if method does exist", ->

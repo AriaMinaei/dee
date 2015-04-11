@@ -23,4 +23,5 @@ module.exports = class AttachmentContainer extends ClassContainer
 		@_instantiate [target]
 
 	isAttachment: yes
-	componentTypeName: "attachment"
+	componentTypeName: "Attachment"
+	canInstantiate: yes

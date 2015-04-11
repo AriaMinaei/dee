@@ -8,4 +8,5 @@ module.exports = class InstantiableContainer extends ClassContainer
 		@_instantiate args
 
 	isInstantiable: yes
-	componentTypeName: "instantiable"
+	componentTypeName: "Instantiable"
+	canInstantiate: yes

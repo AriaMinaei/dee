@@ -11,14 +11,18 @@ module.exports = class SingletonContainer extends ClassContainer
 
 	getValue: ->
 		unless @_value?
-			@_instantiate null, (@_value) =>
-				unless @isLazy()
-					@_dee._removeSingletonFromInitializationQueue this
+			@_instantiate null
 
 		@_value
+
+	_onInstantiation: (@_value) ->
+		unless @isLazy()
+			@_dee._removeSingletonFromInitializationQueue this
+
+		return
 
 	isLazy: ->
 		@_cls.isLazy is yes
 
 	isSingleton: yes
-	componentTypeName: "singleton"
+	componentTypeName: "Singleton"
