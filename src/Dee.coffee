@@ -73,12 +73,17 @@ module.exports = class Dee
 
 		@_ensureIdIsAvailable id
 
-		if cls.isSingleton is yes
-			@_containers[id] = new SingletonContainer this, id, cls
-		else if cls.attachesTo?
-			@_containers[id] = new AttachmentContainer this, id, cls
-		else
-			@_containers[id] = new InstantiableContainer this, id, cls
+		@_containers[id] = switch cls.componentType
+			when "Singleton"
+				new SingletonContainer this, id, cls
+			when "Attachment"
+				new AttachmentContainer this, id, cls
+			when "Instantiable"
+				new InstantiableContainer this, id, cls
+			when "Felange"
+				new FelangeContainer this, id, cls
+			else
+				throw Error "Component '#{id}' does not have a valid type: '#{cls.componentType}'"
 
 		return this
 

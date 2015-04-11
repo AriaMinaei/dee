@@ -33,13 +33,14 @@ describe "Dee", ->
 
 			class B
 				@componentId: "B"
+				@componentType: "Instantiable"
 			(-> d.register B).should.not.throw()
 
 		they "can depend on globals", ->
 			bi = null
 			class A
 				@componentId: "A"
-				@isSingleton: yes
+				@componentType: "Singleton"
 				@deps: {"bi": "b"}
 				constructor: ->
 					bi = @bi
@@ -54,14 +55,14 @@ describe "Dee", ->
 			bi = null
 			class A
 				@componentId: "A"
-				@isSingleton: yes
+				@componentType: "Singleton"
 				@deps: {"bi": "B"}
 				constructor: ->
 					bi = @bi
 
 			class B
 				@componentId: "B"
-				@isSingleton: yes
+				@componentType: "Singleton"
 
 			d.register [A, B]
 			d.initializeRemainingSingletons()
@@ -72,13 +73,14 @@ describe "Dee", ->
 			dep = null
 			class Singleton
 				@componentId: "Singleton"
-				@isSingleton: yes
+				@componentType: "Singleton"
 				@deps: {"instantiable": "Instantiable"}
 				constructor: ->
 					dep = @instantiable
 
 			class Instantiable
 				@componentId: "Instantiable"
+				@componentType: "Instantiable"
 
 			d.register [Singleton, Instantiable]
 			d.initializeRemainingSingletons()
@@ -90,7 +92,7 @@ describe "Dee", ->
 			dep = null
 			class Singleton
 				@componentId: "Singleton"
-				@isSingleton: yes
+				@componentType: "Singleton"
 				@deps: {"instantiable": "Instantiable"}
 				constructor: ->
 					@_initInstantiable "Buick"
@@ -98,6 +100,7 @@ describe "Dee", ->
 
 			class Instantiable
 				@componentId: "Instantiable"
+				@componentType: "Instantiable"
 				constructor: (@name) ->
 
 			d.register [Singleton, Instantiable]
@@ -109,7 +112,7 @@ describe "Dee", ->
 		they "are recognized by having Class.isSingleton = true", ->
 			class S
 				@componentId: "S"
-				@isSingleton: yes
+				@componentType: "Singleton"
 
 			d.register S
 			d.isSingleton("S").should.equal true
@@ -117,7 +120,7 @@ describe "Dee", ->
 		they "are instantiated by calling #Dee.get()", ->
 			class S
 				@componentId: "S"
-				@isSingleton: yes
+				@componentType: "Singleton"
 
 			d.register S
 			d.get("S").should.be.instanceof S
@@ -125,7 +128,7 @@ describe "Dee", ->
 		they "are only instantiated once", ->
 			class S
 				@componentId: "S"
-				@isSingleton: yes
+				@componentType: "Singleton"
 
 			d.register S
 			d.get("S").should.equal d.get("S")
@@ -134,7 +137,7 @@ describe "Dee", ->
 			bi = null
 			class A
 				@componentId: "A"
-				@isSingleton: yes
+				@componentType: "Singleton"
 				@deps: {"bi": "B"}
 				constructor: ->
 					bi = @bi
@@ -142,7 +145,7 @@ describe "Dee", ->
 			aa = null
 			class B
 				@componentId: "B"
-				@isSingleton: yes
+				@componentType: "Singleton"
 				@deps: {"aa": "A"}
 				constructor: ->
 					aa = @aa
@@ -154,16 +157,18 @@ describe "Dee", ->
 			aa.should.equal d.get("A")
 
 	about "Instantiables", ->
-		they "are recognized when not (Class.isSingleton? or Class.attachesTo?)", ->
+		they "are recognized when Class.isInstantiable === true", ->
 			class Instantiable
 				@componentId: "Instantiable"
+				@componentType: "Instantiable"
 
 			class Singleton
 				@componentId: "Singleton"
-				@isSingleton: yes
+				@componentType: "Singleton"
 
 			class Attachment
 				@componentId: "Attachment"
+				@componentType: "Attachment"
 				@attachesTo: "Singleton":
 					as: "attachment"
 
@@ -175,10 +180,12 @@ describe "Dee", ->
 		they "can depend on other instantiables", ->
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 				@deps: {"b": "B"}
 
 			class B
 				@componentId: "B"
+				@componentType: "Instantiable"
 
 			d.register [A, B]
 			d.initializeRemainingSingletons()
@@ -189,9 +196,11 @@ describe "Dee", ->
 		they "are recognized by typeof Class.attachesTo === 'object'", ->
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 
 			class AA
 				@componentId: "AA"
+				@componentType: "Attachment"
 				@attachesTo: "A":
 					as: "aa"
 
@@ -203,10 +212,11 @@ describe "Dee", ->
 		they "can attach to singletons", ->
 			class Singleton
 				@componentId: "Singleton"
-				@isSingleton: yes
+				@componentType: "Singleton"
 
 			class Attachment
 				@componentId: "Attachment"
+				@componentType: "Attachment"
 				@attachesTo: "Singleton":
 					as: "attachment"
 
@@ -217,9 +227,11 @@ describe "Dee", ->
 		they "can attach to instantiables", ->
 			class Instantiable
 				@componentId: "Instantiable"
+				@componentType: "Instantiable"
 
 			class Attachment
 				@componentId: "Attachment"
+				@componentType: "Attachment"
 				@attachesTo: "Instantiable":
 					as: "attachment"
 
@@ -230,9 +242,11 @@ describe "Dee", ->
 		they "are called with their target's instance", ->
 			class Instantiable
 				@componentId: "Instantiable"
+				@componentType: "Instantiable"
 
 			class Attachment
 				@componentId: "Attachment"
+				@componentType: "Attachment"
 				@attachesTo: "Instantiable":
 					as: "attachment"
 
@@ -249,28 +263,36 @@ describe "Dee", ->
 		they "can have peer deps", ->
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 
 			class B
 				@componentId: "B"
+				@componentType: "Attachment"
 				@attachesTo: "A":
 					as: "b"
 					peerDeps: {c: "C"}
 
 			class C
 				@componentId: "C"
+				@componentType: "Instantiable"
 
 			d.register [A, B, C]
 			d.initializeRemainingSingletons()
 
 			expect(d.instantiate("A").c).to.be.instanceOf C
 
+	about "Traits", ->
+		they "are recognized when a class component"
+
 	about "Method patching", ->
 		it "should only be allowed if method does exist", ->
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 
 			class B
 				@componentId: "B"
+				@componentType: "Attachment"
 				@attachesTo: "A":
 					as: "b"
 					patches:
@@ -285,11 +307,13 @@ describe "Dee", ->
 			text = ''
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 				sayHi: ->
 					text += 'A'
 
 			class B
 				@componentId: "B"
+				@componentType: "Attachment"
 				@attachesTo: "A":
 					as: "b"
 					patches:
@@ -305,11 +329,13 @@ describe "Dee", ->
 			text = ''
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 				sayHi: ->
 					text += 'A'
 
 			class B
 				@componentId: "B"
+				@componentType: "Attachment"
 				@attachesTo: "A":
 					as: "b"
 					patches: {"sayHi"}
@@ -325,10 +351,12 @@ describe "Dee", ->
 		it "should only be allowed if no original method by the name exists", ->
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 				sayHi: ->
 
 			class B
 				@componentId: "B"
+				@componentType: "Attachment"
 				@attachesTo: "A":
 					as: "b"
 					provides: sayHi: ->
@@ -341,9 +369,11 @@ describe "Dee", ->
 		it "should add functionality", ->
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 
 			class B
 				@componentId: "B"
+				@componentType: "Attachment"
 				@attachesTo: "A":
 					as: "b"
 					provides: sayHi: -> "hi"
@@ -353,14 +383,14 @@ describe "Dee", ->
 
 			d.instantiate("A").sayHi().should.equal "hi"
 
-
-
 		it "should support using attachment's methods instead of anonymous function", ->
 			class A
 				@componentId: "A"
+				@componentType: "Instantiable"
 
 			class B
 				@componentId: "B"
+				@componentType: "Attachment"
 				@attachesTo: "A":
 					as: "b"
 					provides: {"sayHi"}
@@ -371,6 +401,7 @@ describe "Dee", ->
 			d.initializeRemainingSingletons()
 
 			d.instantiate("A").sayHi().should.equal "hi"
+
 
 
 	about "Accessing #Dee itself", ->
