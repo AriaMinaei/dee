@@ -330,7 +330,7 @@ describe "Dee", ->
 
 			expect(Model.newProp).to.equal "newValue"
 
-		they "support shorthand function", ->
+		they "should support shorthand functions", ->
 			class Trait
 				@componentId: "Trait"
 				@componentType: "Felange"
@@ -346,6 +346,50 @@ describe "Dee", ->
 			d.prepare()
 
 			expect(Model.newProp).to.equal "newValue"
+
+		they "should allow creation of repos", ->
+			class BaseRepo
+				@componentType: "Singleton"
+				@deps: {"dee": "Dee"}
+				constructor: ->
+					@_instances = {}
+					@_instantiator = null
+
+				_setInstantiator: (@_instantiator) ->
+
+				getInstance: ->
+					@dee.instantiate "Model", arguments
+
+				_getOrCreateInstance: (id) ->
+					id = arguments[0]
+
+					if @_instances[id]?
+						return @_instances[id]
+
+					instance = @_instantiator.instantiate arguments
+					@_instances[id] = instance
+
+					instance
+
+			class ModelFelange
+				@componentId: "Trait"
+				@componentType: "Felange"
+				@forTraits: "Model": (container, dee) ->
+					cls = container.getClass()
+					cls.repo = "ModelRepo"
+
+					dee.register class ModelRepo extends BaseRepo
+						@componentId: "ModelRepo"
+
+			class Model
+				@componentId: "Model"
+				@componentType: "Instantiable"
+				@traits: ["Model"]
+
+			d.register [Model, ModelFelange]
+			d.prepare()
+
+			d.instantiate("Model", [10]).should.equal d.instantiate("Model", [10])
 
 	about "Repos", ->
 		they "should work", ->
