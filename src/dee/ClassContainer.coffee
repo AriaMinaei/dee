@@ -1,14 +1,39 @@
 ComponentContainer = require './ComponentContainer'
+TraitReactor = require './TraitReactor'
 
 module.exports = class ClassContainer extends ComponentContainer
-	constructor: ->
+	constructor: (_, __, @_cls) ->
 		super
 
 		@_classPreparedForInstantiation = no
-
 		@_uninitializedPropNames = []
 		@_finalDepsMap = {}
 		@_hasRepo = no
+
+		@_prepareTraitReactors()
+		@_prepareTraitReactions()
+
+	_prepareTraitReactors: ->
+		descs = @_cls.forTraits
+		return if typeof descs isnt 'object'
+
+		for traitId, desc of descs
+			reactor = new TraitReactor @_dee, traitId, desc, this
+			@_dee._getTraitManager(traitId).addReactor reactor
+
+		return
+
+	_prepareTraitReactions: ->
+		unless Array.isArray @_cls.traits
+			@_traits = []
+			return
+
+		@_traits = [].concat @_cls.traits
+
+		for traitId in @_traits
+			@_dee._getTraitManager(traitId).reactTo this
+
+		return
 
 	_prepareClassForInstantiation: ->
 		if @_classPreparedForInstantiation is no
@@ -167,5 +192,8 @@ module.exports = class ClassContainer extends ComponentContainer
 				cannot be provided by '#{sourceComponentId}'"
 
 		@_cls::[methodName] = fn
+
+	getClass: ->
+		@_cls
 
 	isClass: yes

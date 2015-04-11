@@ -79,7 +79,7 @@ describe "Dee", ->
 
 			d.register A
 			d.register "b", {}
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			d.get("b").should.equal bi
 
@@ -97,7 +97,7 @@ describe "Dee", ->
 				@componentType: "Singleton"
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			d.get("B").should.equal bi
 
@@ -115,7 +115,7 @@ describe "Dee", ->
 				@componentType: "Instantiable"
 
 			d.register [Singleton, Instantiable]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			expect(dep).to.be.instanceOf Instantiable
 
@@ -136,7 +136,7 @@ describe "Dee", ->
 				constructor: (@name) ->
 
 			d.register [Singleton, Instantiable]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			expect(dep.name).to.equal "Buick"
 
@@ -183,7 +183,7 @@ describe "Dee", ->
 					aa = @aa
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			bi.should.equal d.get("B")
 			aa.should.equal d.get("A")
@@ -220,7 +220,7 @@ describe "Dee", ->
 				@componentType: "Instantiable"
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			d.instantiate("A").b.should.be.instanceOf B
 
@@ -251,7 +251,7 @@ describe "Dee", ->
 					as: "attachment"
 
 			d.register [Attachment, Singleton]
-			d.initializeRemainingSingletons()
+			d.prepare()
 			expect(d.get("Singleton").attachment).to.be.instanceOf Attachment
 
 		they "can attach to instantiables", ->
@@ -266,7 +266,7 @@ describe "Dee", ->
 					as: "attachment"
 
 			d.register [Attachment, Instantiable]
-			d.initializeRemainingSingletons()
+			d.prepare()
 			expect(d.instantiate("Instantiable").attachment).to.be.instanceOf Attachment
 
 		they "are called with their target's instance", ->
@@ -283,7 +283,7 @@ describe "Dee", ->
 				constructor: (@target) ->
 
 			d.register [Attachment, Instantiable]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			instantiable = d.instantiate("Instantiable")
 			attachment = instantiable.attachment
@@ -307,12 +307,45 @@ describe "Dee", ->
 				@componentType: "Instantiable"
 
 			d.register [A, B, C]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			expect(d.instantiate("A").c).to.be.instanceOf C
 
 	about "Reacting to traits", ->
-		they "are recognized when a class component"
+		they "should work", ->
+			class Trait
+				@componentId: "Trait"
+				@componentType: "Felange"
+				@forTraits: "Model":
+					performs: (container, dee) ->
+						container.getClass().newProp = "newValue"
+
+			class Model
+				@componentId: "Model"
+				@componentType: "Instantiable"
+				@traits: ["Model"]
+
+			d.register [Trait, Model]
+			d.prepare()
+
+			expect(Model.newProp).to.equal "newValue"
+
+		they "support shorthand function", ->
+			class Trait
+				@componentId: "Trait"
+				@componentType: "Felange"
+				@forTraits: "Model": (container, dee) ->
+					container.getClass().newProp = "newValue"
+
+			class Model
+				@componentId: "Model"
+				@componentType: "Instantiable"
+				@traits: ["Model"]
+
+			d.register [Trait, Model]
+			d.prepare()
+
+			expect(Model.newProp).to.equal "newValue"
 
 	about "Repos", ->
 		they "should work", ->
@@ -346,7 +379,7 @@ describe "Dee", ->
 					instance
 
 			d.register [Model, ModelRepo]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			d.instantiate("Model", [10]).should.equal d.instantiate("Model", [10])
 			d.instantiate("Model", [10]).should.equal d.get("ModelRepo").getInstance(10)
@@ -367,7 +400,7 @@ describe "Dee", ->
 						sayHi: -> "hi"
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			(-> d.instantiate("A")).should.throw()
 
@@ -388,7 +421,7 @@ describe "Dee", ->
 						sayHi: -> text += 'B'
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 			d.instantiate("A").sayHi()
 
 			text.should.equal "BA"
@@ -410,7 +443,7 @@ describe "Dee", ->
 				sayHi: -> text += 'B'
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 			d.instantiate("A").sayHi()
 
 			text.should.equal "BA"
@@ -430,7 +463,7 @@ describe "Dee", ->
 					provides: sayHi: ->
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			(-> d.instantiate("A")).should.throw()
 
@@ -447,7 +480,7 @@ describe "Dee", ->
 					provides: sayHi: -> "hi"
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			d.instantiate("A").sayHi().should.equal "hi"
 
@@ -466,7 +499,7 @@ describe "Dee", ->
 				sayHi: -> "hi"
 
 			d.register [A, B]
-			d.initializeRemainingSingletons()
+			d.prepare()
 
 			d.instantiate("A").sayHi().should.equal "hi"
 

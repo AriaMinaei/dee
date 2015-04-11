@@ -1,7 +1,7 @@
 ClassContainer = require './ClassContainer'
 
 module.exports = class SingletonContainer extends ClassContainer
-	constructor: (@_dee, @_id, @_cls) ->
+	constructor: ->
 		super
 
 		@_value = null

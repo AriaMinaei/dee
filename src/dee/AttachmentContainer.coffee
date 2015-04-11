@@ -2,7 +2,7 @@ ClassContainer = require './ClassContainer'
 AttachmentHandler = require './AttachmentHandler'
 
 module.exports = class AttachmentContainer extends ClassContainer
-	constructor: (@_dee, @_id, @_cls) ->
+	constructor: ->
 		super
 
 		@_processDescriptions()

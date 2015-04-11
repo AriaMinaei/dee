@@ -1,4 +1,6 @@
+TraitManager = require './dee/TraitManager'
 GlobalContainer = require './dee/GlobalContainer'
+FelangeContainer = require './dee/FelangeContainer'
 SingletonContainer = require './dee/SingletonContainer'
 AttachmentContainer = require './dee/AttachmentContainer'
 InstantiableContainer = require './dee/InstantiableContainer'
@@ -10,6 +12,8 @@ module.exports = class Dee
 		@_containers = {}
 		@_singletonsInitQueue = []
 		@_targetAttachmentsManagers = {}
+		@_traitManagers = {}
+		@_traitsPreparationsQueue = []
 
 		@registerGlobal "Dee", this
 
@@ -143,10 +147,12 @@ module.exports = class Dee
 	_removeSingletonFromInitializationQueue: (container) ->
 		pluck @_singletonsInitQueue, container
 
-
-	initializeRemainingSingletons: ->
+	prepare: ->
 		while @_singletonsInitQueue.length > 0
 			@_singletonsInitQueue[0].getValue()
+
+		while @_traitsPreparationsQueue.length > 0
+			@_traitsPreparationsQueue.shift().prepare()
 
 		return
 
@@ -157,3 +163,16 @@ module.exports = class Dee
 			@_targetAttachmentsManagers[targetId] = m
 
 		return m
+
+
+	_getTraitManager: (traitId) ->
+		manager = @_traitManagers[traitId]
+		unless manager?
+			@_traitManagers[traitId] = manager = new TraitManager this, traitId
+
+		manager
+
+	_queueTraitPreparation: (traitManager) ->
+		@_traitsPreparationsQueue.push traitManager
+
+		return
