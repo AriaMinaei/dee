@@ -53,7 +53,7 @@ module.exports = class Dee
 	 * @param  {[type]} obj The object object (or any other value)
 	###
 	registerGlobal: (id, obj) ->
-		@_ensureIdIsAvailable id
+		@_ensureIdCanBeTaken id
 
 		@_containers[id] = new GlobalContainer this, id, obj
 
@@ -71,7 +71,7 @@ module.exports = class Dee
 		unless id?
 			throw Error "Class `#{cls}` doesn't have a `componentId`"
 
-		@_ensureIdIsAvailable id
+		@_ensureIdCanBeTaken id
 
 		@_containers[id] = switch cls.componentType
 			when "Singleton"
@@ -87,7 +87,13 @@ module.exports = class Dee
 
 		return this
 
-	_ensureIdIsAvailable: (id) ->
+	_ensureIdCanBeTaken: (id) ->
+		if typeof id isnt 'string'
+			throw Error "Component id should be a string. '#{typeof id}' given."
+
+		unless id.match /^[a-zA-Z]{1}[a-zA-Z0-9\_]*$/
+			throw Error "Invalid component id: '#{id}'"
+
 		if @_containers[id]?
 			throw Error "A component with id '#{id}' is already registered"
 

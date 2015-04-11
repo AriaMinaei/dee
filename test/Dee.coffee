@@ -12,7 +12,39 @@ describe "Dee", ->
 		it "should work", ->
 			(-> new Dee).should.not.throw()
 
-	describe "All components", ->
+	describe "register()", ->
+		it "should only accept component names containing only alphanumerics and underscores", ->
+			(->
+				d.register class A
+					@componentId: "s "
+					@componentType: "Instantiable"
+			).should.throw()
+
+			(->
+				d.register class A
+					@componentId: "0s"
+					@componentType: "Instantiable"
+			).should.throw()
+
+			(->
+				d.register class A
+					@componentId: ""
+					@componentType: "Instantiable"
+			).should.throw()
+
+			(->
+				d.register class A
+					@componentId: 5
+					@componentType: "Instantiable"
+			).should.throw()
+
+			(->
+				d.register class A
+					@componentId: "S0_s"
+					@componentType: "Instantiable"
+			).should.not.throw()
+
+	about "All components", ->
 		they "should have unique componentId-s", ->
 			d.register "a", {}
 			(-> d.register "a", {}).should.throw()
@@ -401,8 +433,6 @@ describe "Dee", ->
 			d.initializeRemainingSingletons()
 
 			d.instantiate("A").sayHi().should.equal "hi"
-
-
 
 	about "Accessing #Dee itself", ->
 		it "is possible by calling #Dee.get('Dee')", ->
