@@ -20,6 +20,7 @@
   "scripts": {
     "test": "mocha --debug-brk \"test/**/*.coffee\"",
     "test:watch": "mocha \"test/**/*.coffee\" --watch",
+    "doc": "mocha \"test/**/*.coffee\" --reporter markdown > api.md",
 
     "compile": "coffee --bare --compile --output ./lib ./src",
     "compile:watch": "jitter src lib -b",

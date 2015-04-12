@@ -1,3 +1,4 @@
+pluck = require 'utila/lib/array/pluck'
 TraitManager = require './dee/TraitManager'
 ClassContainer = require './dee/ClassContainer'
 GlobalContainer = require './dee/GlobalContainer'
@@ -6,7 +7,6 @@ SingletonContainer = require './dee/SingletonContainer'
 AttachmentContainer = require './dee/AttachmentContainer'
 InstantiableContainer = require './dee/InstantiableContainer'
 TargetAttachmentsManager = require './dee/TargetAttachmentsManager'
-pluck = require 'utila/lib/array/pluck'
 
 module.exports = class Dee
 	constructor: ->
