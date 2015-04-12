@@ -165,7 +165,7 @@ module.exports = class ClassContainer extends ComponentContainer
 	patchMethod: (methodName, fn, sourceComponentId) ->
 		@_prepareMethodForPatching methodName
 
-		fnName = "_#{methodName}By#{sourceComponentId}"
+		fnName = "_#{methodName}By#{sourceComponentId.replace(/\//g, '_')}"
 		@_cls::[fnName] = fn
 
 		functionStr = @_cls::[methodName].toString()

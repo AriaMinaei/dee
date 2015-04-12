@@ -98,7 +98,7 @@ module.exports = class Dee
 		if typeof id isnt 'string'
 			throw Error "Component id should be a string. '#{typeof id}' given."
 
-		unless id.match /^[a-zA-Z]{1}[a-zA-Z0-9\_]*$/
+		unless id.match /^[a-zA-Z]{1}[a-zA-Z0-9\/]*$/
 			throw Error "Invalid component id: '#{id}'"
 
 		if @_containers[id]?

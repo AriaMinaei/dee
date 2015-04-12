@@ -12,8 +12,12 @@ describe "Dee", ->
 		it "should work", ->
 			(-> new Dee).should.not.throw()
 
-	describe "register()", ->
-		it "should only accept component names containing only alphanumerics and underscores", ->
+	about "All components", ->
+		they "should have unique componentId-s", ->
+			d.register "a", {}
+			(-> d.register "a", {}).should.throw()
+
+		they "should only have componentId-s containing only alphanumerics and slashes", ->
 			(->
 				d.register class A
 					@componentId: "s "
@@ -40,14 +44,9 @@ describe "Dee", ->
 
 			(->
 				d.register class A
-					@componentId: "S0_s"
+					@componentId: "S0/Pack"
 					@componentType: "Instantiable"
 			).should.not.throw()
-
-	about "All components", ->
-		they "should have unique componentId-s", ->
-			d.register "a", {}
-			(-> d.register "a", {}).should.throw()
 
 	about "Global values", ->
 		they "are recognized by calling #Dee.register(id, value)", ->
