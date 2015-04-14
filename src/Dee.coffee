@@ -5,6 +5,7 @@ GlobalHandler = require './dee/GlobalHandler'
 FelangeHandler = require './dee/FelangeHandler'
 SingletonHandler = require './dee/SingletonHandler'
 AttachmentHandler = require './dee/AttachmentHandler'
+ComponentContainer = require './dee/ComponentContainer'
 InstantiableHandler = require './dee/InstantiableHandler'
 TargetAttachmentsManager = require './dee/TargetAttachmentsManager'
 
@@ -60,9 +61,18 @@ module.exports = class Dee
 	registerGlobal: (id, obj) ->
 		@_ensureIdCanBeTaken id
 
-		@_containers[id] = new GlobalHandler this, id, obj
+		c = @_getContainer id
+		c.setHandler new GlobalHandler c, obj
 
 		return this
+
+	_getContainer: (id) ->
+		container = @_containers[id]
+
+		unless c?
+			@_containers[id] = container = new ComponentContainer this, id
+
+		container
 
 	###*
 	 * Registers a class
@@ -80,15 +90,17 @@ module.exports = class Dee
 
 		ClassHandler.prepareClass cls
 
-		@_containers[id] = switch cls.componentType
+		c = @_getContainer id
+
+		c.setHandler switch cls.componentType
 			when "Singleton"
-				new SingletonHandler this, id, cls
+				new SingletonHandler c, cls
 			when "Attachment"
-				new AttachmentHandler this, id, cls
+				new AttachmentHandler c, cls
 			when "Instantiable"
-				new InstantiableHandler this, id, cls
+				new InstantiableHandler c, cls
 			when "Felange"
-				new FelangeHandler this, id, cls
+				new FelangeHandler c, cls
 			else
 				throw Error "Component '#{id}' does not have a valid type: '#{cls.componentType}'"
 
@@ -107,12 +119,12 @@ module.exports = class Dee
 		return
 
 	_getHandler: (id) ->
-		container = @_containers[id]
+		handler = @_containers[id].getHandler()
 
-		unless container?
+		unless handler?
 			throw Error "Component '#{id}' is not registered"
 
-		container
+		handler
 
 	isGlobal: (id) ->
 		@_getHandler(id) instanceof GlobalHandler
@@ -127,20 +139,20 @@ module.exports = class Dee
 		@_getHandler(id) instanceof AttachmentHandler
 
 	get: (id) ->
-		c = @_getHandler(id)
-		if c.isGlobal or c.isSingleton
-			c.getValue()
+		h = @_getHandler(id)
+		if h.isGlobal or h.isSingleton
+			h.getValue()
 		else
 			throw Error "#Dee.get() only returns singletons or global components.
-				'#{id}' is #{c.componentTypeName}"
+				'#{id}' is #{h.componentTypeName}"
 
 	instantiate: (id, args) ->
-		c = @_getHandler(id)
-		if c.isInstantiable
-			c.instantiate args
+		h = @_getHandler(id)
+		if h.isInstantiable
+			h.instantiate args
 		else
 			throw Error "#Dee.instantiate() only returns for instantiable components.
-				'#{id}' is #{c.componentTypeName}"
+				'#{id}' is #{h.componentTypeName}"
 
 	_addSingletonToInitializationQueue: (container) ->
 		@_singletonsInitQueue.push container

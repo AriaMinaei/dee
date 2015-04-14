@@ -1,2 +1,3 @@
 module.exports = class ComponentHandler
-	constructor: (@_dee, @_id) ->
+	constructor: (@_container) ->
+		{@_dee, @_id} = @_container

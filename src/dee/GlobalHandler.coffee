@@ -1,7 +1,7 @@
 ComponentHandler = require './ComponentHandler'
 
 module.exports = class GlobalHandler extends ComponentHandler
-	constructor: (_, __, @_value) ->
+	constructor: (_, @_value) ->
 		super
 
 	getValue: ->

@@ -3,7 +3,7 @@ TraitReactor = require './TraitReactor'
 clone = require 'utila/lib/clone'
 
 module.exports = class ClassHandler extends ComponentHandler
-	constructor: (_, __, @_cls) ->
+	constructor: (_, @_cls) ->
 		super
 
 		@_classPreparedForInstantiation = no
