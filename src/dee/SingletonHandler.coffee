@@ -1,6 +1,6 @@
-ClassContainer = require './ClassContainer'
+ClassHandler = require './ClassHandler'
 
-module.exports = class SingletonContainer extends ClassContainer
+module.exports = class SingletonHandler extends ClassHandler
 	constructor: ->
 		super
 

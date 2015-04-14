@@ -1,6 +1,6 @@
-ComponentContainer = require './ComponentContainer'
+ComponentHandler = require './ComponentHandler'
 
-module.exports = class GlobalContainer extends ComponentContainer
+module.exports = class GlobalHandler extends ComponentHandler
 	constructor: (_, __, @_value) ->
 		super
 

@@ -297,6 +297,16 @@ describe "Dee", ->
 			d.prepare()
 			expect(d.instantiate("Instantiable").attachment).to.be.instanceOf Attachment
 
+		they "cannot attach to global values", ->
+			class Attachment
+				@componentId: "Attachment"
+				@componentType: "Attachment"
+				@attachesTo: "valueObject":
+					as: "attachment"
+
+			d.register Attachment
+			(-> d.register 'valueObject', {}).should.throw()
+
 		they "are called with their target's instance", ->
 			class Instantiable
 				@componentId: "Instantiable"

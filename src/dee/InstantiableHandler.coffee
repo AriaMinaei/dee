@@ -1,6 +1,6 @@
-ClassContainer = require './ClassContainer'
+ClassHandler = require './ClassHandler'
 
-module.exports = class InstantiableContainer extends ClassContainer
+module.exports = class InstantiableHandler extends ClassHandler
 	instantiate: (args) ->
 		@_instantiate args
 

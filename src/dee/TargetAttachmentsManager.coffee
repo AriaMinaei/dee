@@ -1,22 +1,22 @@
 module.exports = class TargetAttachmentsManager
 	constructor: (@_dee, @_targetId) ->
-		@_handlersByPropName = {}
+		@_appliersByPropName = {}
 
-	addHandler: (handler) ->
-		propName = handler.getPropName()
+	addApplier: (applier) ->
+		propName = applier.getPropName()
 
-		if @_handlersByPropName[propName]?
-			otherHandler = @_handlersByPropName[propName]
-			throw Error "Cannot attach '#{handler.getId()}' to
-				'#{@_targetId}' as '#{propName}' because '#{otherHandler.getId()}'
+		if @_appliersByPropName[propName]?
+			otherApplier = @_appliersByPropName[propName]
+			throw Error "Cannot attach '#{applier.getId()}' to
+				'#{@_targetId}' as '#{propName}' because '#{otherApplier.getId()}'
 				is already using that prop name."
 
-		@_handlersByPropName[propName] = handler
+		@_appliersByPropName[propName] = applier
 
 		return
 
-	setupOnTarget: (targetContainer) ->
-		for _, handler of @_handlersByPropName
-			handler.setupOnTarget targetContainer
+	setupOnTarget: (targetHandler) ->
+		for _, applier of @_appliersByPropName
+			applier.setupOnTarget targetHandler
 
 		return

@@ -1,10 +1,10 @@
 module.exports = class TraitReactor
-	constructor: (@_dee, @_id, @_desc, @_sourceContainer) ->
+	constructor: (@_dee, @_id, @_desc, @_sourceHandler) ->
 
-	applyTo: (targetContainer) ->
-		@_applyPerformFn targetContainer
+	applyTo: (targetHandler) ->
+		@_applyPerformFn targetHandler
 
-	_applyPerformFn: (targetContainer) ->
+	_applyPerformFn: (targetHandler) ->
 		performFn = if typeof @_desc is 'function'
 			@_desc
 		else
@@ -12,4 +12,4 @@ module.exports = class TraitReactor
 
 		return if typeof performFn isnt 'function'
 
-		performFn.apply null, [targetContainer, @_dee]
+		performFn.apply null, [targetHandler, @_dee]

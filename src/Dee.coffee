@@ -1,11 +1,11 @@
 pluck = require 'utila/lib/array/pluck'
 TraitManager = require './dee/TraitManager'
-ClassContainer = require './dee/ClassContainer'
-GlobalContainer = require './dee/GlobalContainer'
-FelangeContainer = require './dee/FelangeContainer'
-SingletonContainer = require './dee/SingletonContainer'
-AttachmentContainer = require './dee/AttachmentContainer'
-InstantiableContainer = require './dee/InstantiableContainer'
+ClassHandler = require './dee/ClassHandler'
+GlobalHandler = require './dee/GlobalHandler'
+FelangeHandler = require './dee/FelangeHandler'
+SingletonHandler = require './dee/SingletonHandler'
+AttachmentHandler = require './dee/AttachmentHandler'
+InstantiableHandler = require './dee/InstantiableHandler'
 TargetAttachmentsManager = require './dee/TargetAttachmentsManager'
 
 module.exports = class Dee
@@ -60,7 +60,7 @@ module.exports = class Dee
 	registerGlobal: (id, obj) ->
 		@_ensureIdCanBeTaken id
 
-		@_containers[id] = new GlobalContainer this, id, obj
+		@_containers[id] = new GlobalHandler this, id, obj
 
 		return this
 
@@ -78,17 +78,17 @@ module.exports = class Dee
 
 		@_ensureIdCanBeTaken id
 
-		ClassContainer.prepareClass cls
+		ClassHandler.prepareClass cls
 
 		@_containers[id] = switch cls.componentType
 			when "Singleton"
-				new SingletonContainer this, id, cls
+				new SingletonHandler this, id, cls
 			when "Attachment"
-				new AttachmentContainer this, id, cls
+				new AttachmentHandler this, id, cls
 			when "Instantiable"
-				new InstantiableContainer this, id, cls
+				new InstantiableHandler this, id, cls
 			when "Felange"
-				new FelangeContainer this, id, cls
+				new FelangeHandler this, id, cls
 			else
 				throw Error "Component '#{id}' does not have a valid type: '#{cls.componentType}'"
 
@@ -106,7 +106,7 @@ module.exports = class Dee
 
 		return
 
-	_getContainer: (id) ->
+	_getHandler: (id) ->
 		container = @_containers[id]
 
 		unless container?
@@ -115,19 +115,19 @@ module.exports = class Dee
 		container
 
 	isGlobal: (id) ->
-		@_getContainer(id) instanceof GlobalContainer
+		@_getHandler(id) instanceof GlobalHandler
 
 	isSingleton: (id) ->
-		@_getContainer(id) instanceof SingletonContainer
+		@_getHandler(id) instanceof SingletonHandler
 
 	isInstantiable: (id) ->
-		@_getContainer(id) instanceof InstantiableContainer
+		@_getHandler(id) instanceof InstantiableHandler
 
 	isAttachment: (id) ->
-		@_getContainer(id) instanceof AttachmentContainer
+		@_getHandler(id) instanceof AttachmentHandler
 
 	get: (id) ->
-		c = @_getContainer(id)
+		c = @_getHandler(id)
 		if c.isGlobal or c.isSingleton
 			c.getValue()
 		else
@@ -135,7 +135,7 @@ module.exports = class Dee
 				'#{id}' is #{c.componentTypeName}"
 
 	instantiate: (id, args) ->
-		c = @_getContainer(id)
+		c = @_getHandler(id)
 		if c.isInstantiable
 			c.instantiate args
 		else

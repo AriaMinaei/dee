@@ -1,8 +1,8 @@
-ComponentContainer = require './ComponentContainer'
+ComponentHandler = require './ComponentHandler'
 TraitReactor = require './TraitReactor'
 clone = require 'utila/lib/clone'
 
-module.exports = class ClassContainer extends ComponentContainer
+module.exports = class ClassHandler extends ComponentHandler
 	constructor: (_, __, @_cls) ->
 		super
 
@@ -66,14 +66,14 @@ module.exports = class ClassContainer extends ComponentContainer
 				throw Error "Double dependency for '#{@_id}'. Prop '#{propName}'
 					was a dep on '#{original}', but now it's being set on '#{depId}'"
 
-		try depContainer = @_dee._getContainer depId
+		try depHandler = @_dee._getHandler depId
 		catch
 			throw Error "Unkown component '#{depId}', dependency of '#{@_id}'"
 
-		if depContainer.isGlobal or depContainer.isSingleton
-			@_setupGlobalOrSingletonDep propName, depContainer
-		else if depContainer.isInstantiable
-			@_setupInstantiableDep propName, depContainer
+		if depHandler.isGlobal or depHandler.isSingleton
+			@_setupGlobalOrSingletonDep propName, depHandler
+		else if depHandler.isInstantiable
+			@_setupInstantiableDep propName, depHandler
 		else
 			# todo: better error
 			throw Error "Attachment?"
@@ -81,7 +81,7 @@ module.exports = class ClassContainer extends ComponentContainer
 		@_finalDepsMap[propName] = depId
 		return
 
-	_setupGlobalOrSingletonDep: (propName, depContainer) ->
+	_setupGlobalOrSingletonDep: (propName, depHandler) ->
 		valuePropName = "_#{propName}"
 		@addUninitializedPropName valuePropName
 
@@ -89,7 +89,7 @@ module.exports = class ClassContainer extends ComponentContainer
 		function getter() {
 			var prop = this.#{valuePropName};
 			if (prop === null) {
-				return this.#{valuePropName} = depContainer.getValue();
+				return this.#{valuePropName} = depHandler.getValue();
 			} else {
 				return prop;
 			}
@@ -100,7 +100,7 @@ module.exports = class ClassContainer extends ComponentContainer
 
 		return
 
-	_setupInstantiableDep: (propName, depContainer) ->
+	_setupInstantiableDep: (propName, depHandler) ->
 		valuePropName = "_#{propName}"
 		@addUninitializedPropName valuePropName
 		initializerMethodName = if propName[0] is '_'
@@ -110,7 +110,7 @@ module.exports = class ClassContainer extends ComponentContainer
 
 		eval """
 		function initialize() {
-			return this.#{valuePropName} = depContainer.instantiate(arguments);
+			return this.#{valuePropName} = depHandler.instantiate(arguments);
 		};
 		"""
 
