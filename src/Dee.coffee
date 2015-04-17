@@ -7,7 +7,6 @@ SingletonHandler = require './dee/SingletonHandler'
 AttachmentHandler = require './dee/AttachmentHandler'
 ComponentContainer = require './dee/ComponentContainer'
 InstantiableHandler = require './dee/InstantiableHandler'
-TargetAttachmentsManager = require './dee/TargetAttachmentsManager'
 
 module.exports = class Dee
 	constructor: ->
@@ -59,8 +58,6 @@ module.exports = class Dee
 	 * @param  {[type]} obj The object object (or any other value)
 	###
 	registerGlobal: (id, obj) ->
-		@_ensureIdCanBeTaken id
-
 		c = @_getContainer id
 		c.setHandler new GlobalHandler c, obj
 
@@ -69,7 +66,13 @@ module.exports = class Dee
 	_getContainer: (id) ->
 		container = @_containers[id]
 
-		unless c?
+		unless container?
+			if typeof id isnt 'string'
+				throw Error "Component id should be a string. '#{typeof id}' given."
+
+			unless id.match /^[a-zA-Z]{1}[a-zA-Z0-9\/]*$/
+				throw Error "Invalid component id: '#{id}'"
+
 			@_containers[id] = container = new ComponentContainer this, id
 
 		container
@@ -85,8 +88,6 @@ module.exports = class Dee
 		id = cls.componentId
 		unless id?
 			throw Error "Class `#{cls}` doesn't have a `componentId`"
-
-		@_ensureIdCanBeTaken id
 
 		ClassHandler.prepareClass cls
 
@@ -105,18 +106,6 @@ module.exports = class Dee
 				throw Error "Component '#{id}' does not have a valid type: '#{cls.componentType}'"
 
 		return this
-
-	_ensureIdCanBeTaken: (id) ->
-		if typeof id isnt 'string'
-			throw Error "Component id should be a string. '#{typeof id}' given."
-
-		unless id.match /^[a-zA-Z]{1}[a-zA-Z0-9\/]*$/
-			throw Error "Invalid component id: '#{id}'"
-
-		if @_containers[id]?
-			throw Error "A component with id '#{id}' is already registered"
-
-		return
 
 	_getHandler: (id) ->
 		handler = @_containers[id].getHandler()
@@ -170,15 +159,6 @@ module.exports = class Dee
 			@_traitsPreparationsQueue.shift().prepare()
 
 		return
-
-	_getTargetAttachmentsManager: (targetId) ->
-		m = @_targetAttachmentsManagers[targetId]
-		unless m?
-			m = new TargetAttachmentsManager this, targetId
-			@_targetAttachmentsManagers[targetId] = m
-
-		return m
-
 
 	_getTraitManager: (traitId) ->
 		manager = @_traitManagers[traitId]

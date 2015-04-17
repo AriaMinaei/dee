@@ -9,15 +9,9 @@ module.exports = class AttachmentHandler extends ClassHandler
 
 	_processDescriptions: ->
 		for targetId, desc of @_cls.attachesTo
-			@_processDescription targetId, desc
+			new AttachmentApplier @_dee, this, targetId, desc
 
 		return
-
-	_processDescription: (targetId, desc) ->
-		applier = new AttachmentApplier this, targetId, desc
-		manager = @_dee._getTargetAttachmentsManager targetId
-
-		manager.addApplier applier
 
 	instantiate: (target) ->
 		@_instantiate [target]

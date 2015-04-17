@@ -1,7 +1,10 @@
 module.exports = class AttachmentApplier
-	constructor: (@_container, @_targetId, @_desc) ->
+	constructor: (@_dee, @_sourceHandler, @_targetId, @_desc) ->
 		if typeof @_desc.as isnt 'string'
-			throw Error "Invalide `as` property in attachment '#{@_container._id}' on target '#{@_targetId}'"
+			throw Error "Invalide `as` property in attachment '#{@_sourceHandler._id}' on target '#{@_targetId}'"
+
+		@_targetContainer = @_dee._getContainer @_targetId
+		@_targetContainer.addAttachmentApplier this
 
 		@_propName = @_desc.as
 
@@ -9,7 +12,7 @@ module.exports = class AttachmentApplier
 		@_propName
 
 	getId: ->
-		@_container._id
+		@_sourceHandler._id
 
 	setupOnTarget: (targetHandler) ->
 		@_setupLazyGetterOn targetHandler
@@ -23,7 +26,7 @@ module.exports = class AttachmentApplier
 		valuePropName = "_#{@_propName}"
 		targetHandler.addUninitializedPropName valuePropName
 
-		container = @_container
+		container = @_sourceHandler
 
 		eval """
 		function getter() {

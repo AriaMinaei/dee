@@ -49,7 +49,8 @@ module.exports = class ClassHandler extends ComponentHandler
 				instantiate: =>
 					@_actualltInstantiate arguments
 
-		@_dee._targetAttachmentsManagers[@_id]?.setupOnTarget this
+		if @_container.hasAttachmentAppliersManager()
+			@_container._getAttachmentAppliersManager().setupOnTarget this
 
 		if typeof @_cls.deps is 'object'
 			for propName, depId of @_cls.deps

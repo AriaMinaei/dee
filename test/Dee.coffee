@@ -493,7 +493,7 @@ describe "Dee", ->
 
 			(-> d.instantiate("A")).should.throw()
 
-		they "should ensure invokation of patched functionality precedes original method's invokation", ->
+		it "should ensure invokation of patched functionality precedes original method's invokation", ->
 			text = ''
 			class A
 				@componentId: "A"
@@ -515,7 +515,7 @@ describe "Dee", ->
 
 			text.should.equal "BA"
 
-		they "should support using attachment's methods instead of anonymous function", ->
+		it "should support using attachment's methods instead of anonymous function", ->
 			text = ''
 			class A
 				@componentId: "A"
