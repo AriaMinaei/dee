@@ -146,6 +146,16 @@ describe "Dee", ->
 			A.traits.should.be.like ["B", "C"]
 			A.deps.should.be.like {"one", "two", "three"}
 
+		they "use an extension of the original class", ->
+			class Instantiable
+				@componentId: "Instantiable"
+				@componentType: "Instantiable"
+
+			d.register Instantiable
+			d.prepare()
+
+			d.instantiate("Instantiable").constructor.should.not.equal Instantiable
+
 	about "Dependency on instantiables", ->
 		it "should have customizable initializers", ->
 			dep = null
@@ -365,7 +375,7 @@ describe "Dee", ->
 			d.register [Trait, Model]
 			d.prepare()
 
-			expect(Model.newProp).to.equal "newValue"
+			expect(d.instantiate('Model').constructor.newProp).to.equal "newValue"
 
 		they "should support shorthand functions", ->
 			class Trait
@@ -382,7 +392,7 @@ describe "Dee", ->
 			d.register [Trait, Model]
 			d.prepare()
 
-			expect(Model.newProp).to.equal "newValue"
+			expect(d.instantiate('Model').constructor.newProp).to.equal "newValue"
 
 		they "should allow creation of repos", ->
 			class BaseRepo

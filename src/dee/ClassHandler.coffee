@@ -3,8 +3,10 @@ TraitReactor = require './TraitReactor'
 clone = require 'utila/lib/clone'
 
 module.exports = class ClassHandler extends ComponentHandler
-	constructor: (_, @_cls) ->
+	constructor: (_, @_originalCls) ->
 		super
+
+		@_cls = ClassHandler.createIndependentClass @_originalCls
 
 		@_classPreparedForInstantiation = no
 		@_uninitializedPropNames = []
@@ -234,6 +236,26 @@ module.exports = class ClassHandler extends ComponentHandler
 
 		return
 
+	@createIndependentClass: (original) ->
+		# From coffeescript
+		`function child(){
+			return child.__super__.constructor.apply(this, arguments);
+		}`
+
+		for own key of original
+			child[key] = original[key]
+
+		`function ctor(){
+			this.constructor = child;
+		}`
+
+		ctor:: = original::
+		child:: = new ctor()
+
+		child.__super__ = original::
+
+		child
+
 prepend = (top, bottom) ->
 	return top unless bottom?
 	return bottom unless top?
@@ -252,3 +274,4 @@ prepend = (top, bottom) ->
 					top[key] = clone value
 
 	top
+
