@@ -123,7 +123,6 @@ describe "Dee", ->
 				@componentId: "A"
 				@deps: {"one"}
 				@traits: ["B"]
-				# @attachesTo: "X":
 
 			class B
 				@componentType: "Singleton"
