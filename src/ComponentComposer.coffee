@@ -1,14 +1,14 @@
 pluck = require 'utila/lib/array/pluck'
-TraitManager = require './dee/TraitManager'
-ClassHandler = require './dee/ClassHandler'
-GlobalHandler = require './dee/GlobalHandler'
-FelangeHandler = require './dee/FelangeHandler'
-SingletonHandler = require './dee/SingletonHandler'
-AttachmentHandler = require './dee/AttachmentHandler'
-ComponentContainer = require './dee/ComponentContainer'
-InstantiableHandler = require './dee/InstantiableHandler'
+TraitManager = require './componentComposer/TraitManager'
+ClassHandler = require './componentComposer/ClassHandler'
+GlobalHandler = require './componentComposer/GlobalHandler'
+FelangeHandler = require './componentComposer/FelangeHandler'
+SingletonHandler = require './componentComposer/SingletonHandler'
+AttachmentHandler = require './componentComposer/AttachmentHandler'
+ComponentContainer = require './componentComposer/ComponentContainer'
+InstantiableHandler = require './componentComposer/InstantiableHandler'
 
-module.exports = class Dee
+module.exports = class ComponentComposer
 	constructor: ->
 		@_containers = {}
 		@_singletonsInitQueue = []
@@ -16,7 +16,7 @@ module.exports = class Dee
 		@_traitManagers = {}
 		@_traitsPreparationsQueue = []
 
-		@registerGlobal "Dee", this
+		@registerGlobal "ComponentComposer", this
 
 	###*
 	 * Registers the given component(s).
@@ -132,7 +132,7 @@ module.exports = class Dee
 		if h.isGlobal or h.isSingleton
 			h.getValue()
 		else
-			throw Error "#Dee.get() only returns singletons or global components.
+			throw Error "#ComponentComposer.get() only returns singletons or global components.
 				'#{id}' is #{h.componentTypeName}"
 
 	instantiate: (id, args) ->
@@ -140,7 +140,7 @@ module.exports = class Dee
 		if h.isInstantiable
 			h.instantiate args
 		else
-			throw Error "#Dee.instantiate() only returns for instantiable components.
+			throw Error "#ComponentComposer.instantiate() only returns for instantiable components.
 				'#{id}' is #{h.componentTypeName}"
 
 	_addSingletonToInitializationQueue: (container) ->

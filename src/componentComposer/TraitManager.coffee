@@ -3,7 +3,7 @@ module.exports = class TraitManager
 		@_reactors = []
 		@_containers = []
 		@_queue = []
-		@_queuedInDee = no
+		@_queuedInComponentComposer = no
 
 	addReactor: (reactor) ->
 		@_reactors.push reactor
@@ -20,7 +20,7 @@ module.exports = class TraitManager
 	_queueReaction: (reactor, container) ->
 		@_queue.push {reactor, container}
 
-		unless @_queuedInDee
+		unless @_queuedInComponentComposer
 			@_dee._queueTraitPreparation this
 
 		return
@@ -28,7 +28,7 @@ module.exports = class TraitManager
 
 
 	prepare: ->
-		@_queuedInDee = no
+		@_queuedInComponentComposer = no
 
 		while @_queue.length > 0
 			{reactor, container} = @_queue.shift()

@@ -1,71 +1,71 @@
-Dee = require '../src/Dee'
+ComponentComposer = require '../src/ComponentComposer'
 about = describe
 they = it
 
-describe "Dee", ->
+describe "ComponentComposer", ->
 
-	d = null
+	cc = null
 	beforeEach ->
-		d = new Dee
+		cc = new ComponentComposer
 
 	describe "constructor()", ->
 		it "should work", ->
-			(-> new Dee).should.not.throw()
+			(-> new ComponentComposer).should.not.throw()
 
 	about "All components", ->
 		they "should have unique componentId-s", ->
-			d.register "a", {}
-			(-> d.register "a", {}).should.throw()
+			cc.register "a", {}
+			(-> cc.register "a", {}).should.throw()
 
 		they "should only have componentId-s containing only alphanumerics and slashes", ->
 			(->
-				d.register class A
+				cc.register class A
 					@componentId: "s "
 					@componentType: "Instantiable"
 			).should.throw()
 
 			(->
-				d.register class A
+				cc.register class A
 					@componentId: "0s"
 					@componentType: "Instantiable"
 			).should.throw()
 
 			(->
-				d.register class A
+				cc.register class A
 					@componentId: ""
 					@componentType: "Instantiable"
 			).should.throw()
 
 			(->
-				d.register class A
+				cc.register class A
 					@componentId: 5
 					@componentType: "Instantiable"
 			).should.throw()
 
 			(->
-				d.register class A
+				cc.register class A
 					@componentId: "S0/Pack"
 					@componentType: "Instantiable"
 			).should.not.throw()
 
 	about "Global values", ->
-		they "are recognized by calling #Dee.register(id, value)", ->
-			d.register "a", a = {}
-			d.isGlobal("a").should.equal true
+		they "are recognized by calling #ComponentComposer.register(id, value)", ->
+			cc.register "a", a = {}
+			cc.isGlobal("a").should.equal true
 
 		they "are returned untouched", ->
-			d.register "a", a = {}
-			d.get("a").should.equal a
+			cc.register "a", a = {}
+			cc.get("a").should.equal a
 
 	about "All class components (singletons, attachments, instantiables)", ->
 		they "should have a Class.componentId", ->
 			class A
-			(-> d.register A).should.throw()
+			(-> cc.register A).should.throw()
 
 			class B
 				@componentId: "B"
 				@componentType: "Instantiable"
-			(-> d.register B).should.not.throw()
+			(-> cc.register B).should.not.throw()
 
 		they "can depend on globals", ->
 			bi = null
@@ -76,11 +76,11 @@ describe "Dee", ->
 				constructor: ->
 					bi = @bi
 
-			d.register A
-			d.register "b", {}
-			d.prepare()
+			cc.register A
+			cc.register "b", {}
+			cc.prepare()
 
-			d.get("b").should.equal bi
+			cc.get("b").should.equal bi
 
 		they "can depend on singletons", ->
 			bi = null
@@ -95,10 +95,10 @@ describe "Dee", ->
 				@componentId: "B"
 				@componentType: "Singleton"
 
-			d.register [A, B]
-			d.prepare()
+			cc.register [A, B]
+			cc.prepare()
 
-			d.get("B").should.equal bi
+			cc.get("B").should.equal bi
 
 		they "can depend on instantiables", ->
 			dep = null
@@ -113,8 +113,8 @@ describe "Dee", ->
 				@componentId: "Instantiable"
 				@componentType: "Instantiable"
 
-			d.register [Singleton, Instantiable]
-			d.prepare()
+			cc.register [Singleton, Instantiable]
+			cc.prepare()
 
 			expect(dep).to.be.instanceOf Instantiable
 
@@ -140,7 +140,7 @@ describe "Dee", ->
 			A:: = Object.create B::
 			A::constructor = B
 
-			d.register A
+			cc.register A
 			A.componentId.should.equal "A"
 			A.componentType.should.equal "Singleton"
 			A.traits.should.be.like ["B", "C"]
@@ -151,10 +151,10 @@ describe "Dee", ->
 				@componentId: "Instantiable"
 				@componentType: "Instantiable"
 
-			d.register Instantiable
-			d.prepare()
+			cc.register Instantiable
+			cc.prepare()
 
-			d.instantiate("Instantiable").constructor.should.not.equal Instantiable
+			cc.instantiate("Instantiable").constructor.should.not.equal Instantiable
 
 	about "Dependency on instantiables", ->
 		it "should have customizable initializers", ->
@@ -172,35 +172,35 @@ describe "Dee", ->
 				@componentType: "Instantiable"
 				constructor: (@name) ->
 
-			d.register [Singleton, Instantiable]
-			d.prepare()
+			cc.register [Singleton, Instantiable]
+			cc.prepare()
 
 			expect(dep.name).to.equal "Buick"
 
 	about "Singleton-s", ->
-		they "are recognized by having Class.isSingleton = true", ->
+		they "are recognized by having Class.componentType == 'Singleton'", ->
 			class S
 				@componentId: "S"
 				@componentType: "Singleton"
 
-			d.register S
-			d.isSingleton("S").should.equal true
+			cc.register S
+			cc.isSingleton("S").should.equal true
 
-		they "are instantiated by calling #Dee.get()", ->
+		they "are instantiated by calling #ComponentComposer.get()", ->
 			class S
 				@componentId: "S"
 				@componentType: "Singleton"
 
-			d.register S
-			d.get("S").should.be.instanceof S
+			cc.register S
+			cc.get("S").should.be.instanceof S
 
 		they "are only instantiated once", ->
 			class S
 				@componentId: "S"
 				@componentType: "Singleton"
 
-			d.register S
-			d.get("S").should.equal d.get("S")
+			cc.register S
+			cc.get("S").should.equal cc.get("S")
 
 		they "can have circular dependencies with each other", ->
 			bi = null
@@ -219,14 +219,14 @@ describe "Dee", ->
 				constructor: ->
 					aa = @aa
 
-			d.register [A, B]
-			d.prepare()
+			cc.register [A, B]
+			cc.prepare()
 
-			bi.should.equal d.get("B")
-			aa.should.equal d.get("A")
+			bi.should.equal cc.get("B")
+			aa.should.equal cc.get("A")
 
 	about "Instantiables", ->
-		they "are recognized when Class.isInstantiable === true", ->
+		they "are recognized when Class.componentType == 'Instantiable'", ->
 			class Instantiable
 				@componentId: "Instantiable"
 				@componentType: "Instantiable"
@@ -241,10 +241,10 @@ describe "Dee", ->
 				@attachesTo: "Singleton":
 					as: "attachment"
 
-			d.register [Instantiable, Singleton, Attachment]
-			d.isInstantiable("Instantiable").should.equal true
-			d.isInstantiable("Attachment").should.equal false
-			d.isInstantiable("Singleton").should.equal false
+			cc.register [Instantiable, Singleton, Attachment]
+			cc.isInstantiable("Instantiable").should.equal true
+			cc.isInstantiable("Attachment").should.equal false
+			cc.isInstantiable("Singleton").should.equal false
 
 		they "can depend on other instantiables", ->
 			class A
@@ -256,10 +256,10 @@ describe "Dee", ->
 				@componentId: "B"
 				@componentType: "Instantiable"
 
-			d.register [A, B]
-			d.prepare()
+			cc.register [A, B]
+			cc.prepare()
 
-			d.instantiate("A").b.should.be.instanceOf B
+			cc.instantiate("A").b.should.be.instanceOf B
 
 	about "Attachments", ->
 		they "are recognized by typeof Class.attachesTo === 'object'", ->
@@ -273,8 +273,8 @@ describe "Dee", ->
 				@attachesTo: "A":
 					as: "aa"
 
-			d.register [A, AA]
-			d.isAttachment("AA").should.equal true
+			cc.register [A, AA]
+			cc.isAttachment("AA").should.equal true
 
 		they "can attach to singletons", ->
 			class Singleton
@@ -287,9 +287,9 @@ describe "Dee", ->
 				@attachesTo: "Singleton":
 					as: "attachment"
 
-			d.register [Attachment, Singleton]
-			d.prepare()
-			expect(d.get("Singleton").attachment).to.be.instanceOf Attachment
+			cc.register [Attachment, Singleton]
+			cc.prepare()
+			expect(cc.get("Singleton").attachment).to.be.instanceOf Attachment
 
 		they "can attach to instantiables", ->
 			class Instantiable
@@ -302,9 +302,9 @@ describe "Dee", ->
 				@attachesTo: "Instantiable":
 					as: "attachment"
 
-			d.register [Attachment, Instantiable]
-			d.prepare()
-			expect(d.instantiate("Instantiable").attachment).to.be.instanceOf Attachment
+			cc.register [Attachment, Instantiable]
+			cc.prepare()
+			expect(cc.instantiate("Instantiable").attachment).to.be.instanceOf Attachment
 
 		they "cannot attach to global values", ->
 			class Attachment
@@ -313,8 +313,8 @@ describe "Dee", ->
 				@attachesTo: "valueObject":
 					as: "attachment"
 
-			d.register Attachment
-			(-> d.register 'valueObject', {}).should.throw()
+			cc.register Attachment
+			(-> cc.register 'valueObject', {}).should.throw()
 
 		they "are called with their target's instance", ->
 			class Instantiable
@@ -329,10 +329,10 @@ describe "Dee", ->
 
 				constructor: (@target) ->
 
-			d.register [Attachment, Instantiable]
-			d.prepare()
+			cc.register [Attachment, Instantiable]
+			cc.prepare()
 
-			instantiable = d.instantiate("Instantiable")
+			instantiable = cc.instantiate("Instantiable")
 			attachment = instantiable.attachment
 
 			expect(attachment.target).to.be.equal instantiable
@@ -353,10 +353,10 @@ describe "Dee", ->
 				@componentId: "C"
 				@componentType: "Instantiable"
 
-			d.register [A, B, C]
-			d.prepare()
+			cc.register [A, B, C]
+			cc.prepare()
 
-			expect(d.instantiate("A").c).to.be.instanceOf C
+			expect(cc.instantiate("A").c).to.be.instanceOf C
 
 	about "Reacting to traits", ->
 		they "should work", ->
@@ -364,7 +364,7 @@ describe "Dee", ->
 				@componentId: "Trait"
 				@componentType: "Felange"
 				@forTraits: "Model":
-					performs: (container, dee) ->
+					performs: (container, componentComposer) ->
 						container.getClass().newProp = "newValue"
 
 			class Model
@@ -372,16 +372,16 @@ describe "Dee", ->
 				@componentType: "Instantiable"
 				@traits: ["Model"]
 
-			d.register [Trait, Model]
-			d.prepare()
+			cc.register [Trait, Model]
+			cc.prepare()
 
-			expect(d.instantiate('Model').constructor.newProp).to.equal "newValue"
+			expect(cc.instantiate('Model').constructor.newProp).to.equal "newValue"
 
 		they "should support shorthand functions", ->
 			class Trait
 				@componentId: "Trait"
 				@componentType: "Felange"
-				@forTraits: "Model": (container, dee) ->
+				@forTraits: "Model": (container, componentComposer) ->
 					container.getClass().newProp = "newValue"
 
 			class Model
@@ -389,15 +389,15 @@ describe "Dee", ->
 				@componentType: "Instantiable"
 				@traits: ["Model"]
 
-			d.register [Trait, Model]
-			d.prepare()
+			cc.register [Trait, Model]
+			cc.prepare()
 
-			expect(d.instantiate('Model').constructor.newProp).to.equal "newValue"
+			expect(cc.instantiate('Model').constructor.newProp).to.equal "newValue"
 
 		they "should allow creation of repos", ->
 			class BaseRepo
 				@componentType: "Singleton"
-				@deps: {"dee": "Dee"}
+				@deps: {"componentComposer": "ComponentComposer"}
 				constructor: ->
 					@_instances = {}
 					@_instantiator = null
@@ -405,7 +405,7 @@ describe "Dee", ->
 				_setInstantiator: (@_instantiator) ->
 
 				getInstance: ->
-					@dee.instantiate "Model", arguments
+					@componentComposer.instantiate "Model", arguments
 
 				_getOrCreateInstance: (id) ->
 					id = arguments[0]
@@ -421,7 +421,7 @@ describe "Dee", ->
 			class ModelFelange
 				@componentId: "Trait"
 				@componentType: "Felange"
-				@forTraits: "Model": (container, dee) ->
+				@forTraits: "Model": (container, componentComposer) ->
 					cls = container.getClass()
 					cls.repo = "ModelRepo"
 
@@ -433,17 +433,17 @@ describe "Dee", ->
 					ModelRepo.prototype = Object.create BaseRepo.prototype
 					ModelRepo::constructor = BaseRepo
 
-					dee.register ModelRepo
+					componentComposer.register ModelRepo
 
 			class Model
 				@componentId: "Model"
 				@componentType: "Instantiable"
 				@traits: ["Model"]
 
-			d.register [Model, ModelFelange]
-			d.prepare()
+			cc.register [Model, ModelFelange]
+			cc.prepare()
 
-			d.instantiate("Model", [10]).should.equal d.instantiate("Model", [10])
+			cc.instantiate("Model", [10]).should.equal cc.instantiate("Model", [10])
 
 	about "Repos", ->
 		they "should work", ->
@@ -455,7 +455,7 @@ describe "Dee", ->
 			class ModelRepo
 				@componentId: "ModelRepo"
 				@componentType: "Singleton"
-				@deps: {"dee": "Dee"}
+				@deps: {"componentComposer": "ComponentComposer"}
 				constructor: ->
 					@_instances = {}
 					@_instantiator = null
@@ -463,7 +463,7 @@ describe "Dee", ->
 				_setInstantiator: (@_instantiator) ->
 
 				getInstance: ->
-					@dee.instantiate "Model", arguments
+					@componentComposer.instantiate "Model", arguments
 
 				_getOrCreateInstance: (id) ->
 					id = arguments[0]
@@ -476,12 +476,12 @@ describe "Dee", ->
 
 					instance
 
-			d.register [Model, ModelRepo]
-			d.prepare()
+			cc.register [Model, ModelRepo]
+			cc.prepare()
 
-			d.instantiate("Model", [10]).should.equal d.instantiate("Model", [10])
-			d.instantiate("Model", [10]).should.equal d.get("ModelRepo").getInstance(10)
-			d.instantiate("Model", [11]).should.not.equal d.get("ModelRepo").getInstance(10)
+			cc.instantiate("Model", [10]).should.equal cc.instantiate("Model", [10])
+			cc.instantiate("Model", [10]).should.equal cc.get("ModelRepo").getInstance(10)
+			cc.instantiate("Model", [11]).should.not.equal cc.get("ModelRepo").getInstance(10)
 
 	about "Method patching", ->
 		it "should only be allowed if method does exist", ->
@@ -497,10 +497,10 @@ describe "Dee", ->
 					patches:
 						sayHi: -> "hi"
 
-			d.register [A, B]
-			d.prepare()
+			cc.register [A, B]
+			cc.prepare()
 
-			(-> d.instantiate("A")).should.throw()
+			(-> cc.instantiate("A")).should.throw()
 
 		it "should ensure invokation of patched functionality precedes original method's invokation", ->
 			text = ''
@@ -518,9 +518,9 @@ describe "Dee", ->
 					patches:
 						sayHi: -> text += 'B'
 
-			d.register [A, B]
-			d.prepare()
-			d.instantiate("A").sayHi()
+			cc.register [A, B]
+			cc.prepare()
+			cc.instantiate("A").sayHi()
 
 			text.should.equal "BA"
 
@@ -540,9 +540,9 @@ describe "Dee", ->
 					patches: {"sayHi"}
 				sayHi: -> text += 'B'
 
-			d.register [A, B]
-			d.prepare()
-			d.instantiate("A").sayHi()
+			cc.register [A, B]
+			cc.prepare()
+			cc.instantiate("A").sayHi()
 
 			text.should.equal "BA"
 
@@ -560,10 +560,10 @@ describe "Dee", ->
 					as: "b"
 					provides: sayHi: ->
 
-			d.register [A, B]
-			d.prepare()
+			cc.register [A, B]
+			cc.prepare()
 
-			(-> d.instantiate("A")).should.throw()
+			(-> cc.instantiate("A")).should.throw()
 
 		it "should add functionality", ->
 			class A
@@ -577,10 +577,10 @@ describe "Dee", ->
 					as: "b"
 					provides: sayHi: -> "hi"
 
-			d.register [A, B]
-			d.prepare()
+			cc.register [A, B]
+			cc.prepare()
 
-			d.instantiate("A").sayHi().should.equal "hi"
+			cc.instantiate("A").sayHi().should.equal "hi"
 
 		it "should support using attachment's methods instead of anonymous function", ->
 			class A
@@ -596,11 +596,11 @@ describe "Dee", ->
 
 				sayHi: -> "hi"
 
-			d.register [A, B]
-			d.prepare()
+			cc.register [A, B]
+			cc.prepare()
 
-			d.instantiate("A").sayHi().should.equal "hi"
+			cc.instantiate("A").sayHi().should.equal "hi"
 
-	about "Accessing #Dee itself", ->
-		it "is possible by calling #Dee.get('Dee')", ->
-			d.get("Dee").should.equal d
+	about "Accessing #ComponentComposer itself", ->
+		it "is possible by calling #ComponentComposer.get('ComponentComposer')", ->
+			cc.get("ComponentComposer").should.equal cc
